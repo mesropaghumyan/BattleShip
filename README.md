@@ -72,4 +72,7 @@ dotnet clean BattleShip.slnx
 - La solution racine est [BattleShip.slnx](BattleShip.slnx).
 - L’API expose deux endpoints de jeu : `POST /games` (crée une nouvelle partie et renvoie son identifiant) et
   `GET /games/{id}` (consulte l’état d’une partie existante).
+- Jouer un coup se fait exclusivement via le service gRPC `Battlefield.FireShot` (contrat
+  [`Protos/battlefield.proto`](Protos/battlefield.proto)), jamais en HTTP : il applique le tir du joueur puis,
+  si la partie n’est pas terminée, la riposte immédiate de l’ordinateur, dans le même appel.
 - L’application Blazor démarre via le projet `BattleShip.App`.
