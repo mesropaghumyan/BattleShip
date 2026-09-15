@@ -1,0 +1,46 @@
+@page "/"
+@inject GameHttpClient GameClient
+@inject NavigationManager Navigation
+
+<PageTitle>Bataille navale</PageTitle>
+
+<h1>Bataille navale</h1>
+
+<p>Affrontez l'ordinateur (niveau facile) sur une grille 10x10.</p>
+
+<button class="btn btn-primary" disabled="@isCreating" @onclick="StartGameAsync">
+    @(isCreating ? "Création..." : "Nouvelle partie")
+</button>
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-danger mt-3" role="alert">
+        @errorMessage
+    </div>
+}
+
+@code {
+    private bool isCreating;
+    private string? errorMessage;
+
+    private async Task StartGameAsync()
+    {
+        if (isCreating)
+            return;
+
+        errorMessage = null;
+        isCreating = true;
+
+        try
+        {
+            var gameId = await GameClient.CreateGameAsync();
+            Navigation.NavigateTo($"/play/{gameId}");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"CreateGameAsync failed: {ex}");
+            errorMessage = "Impossible de créer la partie. Vérifiez que l'API est démarrée puis réessayez.";
+            isCreating = false;
+        }
+    }
+}

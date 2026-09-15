@@ -1,0 +1,178 @@
+@page "/play/{GameId:guid}"
+@inject GameHttpClient GameClient
+@inject ShotGrpcClient ShotClient
+@using Fb = BattleShip.Grpc
+
+<PageTitle>Bataille navale — partie en cours</PageTitle>
+
+<h1>Bataille navale</h1>
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">
+        @errorMessage
+        <button class="btn btn-link p-0 ms-2" @onclick="ReloadStateAsync">Réessayer</button>
+    </div>
+}
+
+@if (state is null)
+{
+    @if (errorMessage is null)
+    {
+        <p><em>Chargement de la partie...</em></p>
+    }
+}
+else
+{
+    <p class="fw-bold" role="status">@StatusLabel</p>
+
+    @if (lastTurn is not null)
+    {
+        <p class="last-turn">
+            @if (lastTurn.PlayerShot is not null)
+            {
+                <text>Vous : @OutcomeLabel(lastTurn.PlayerShot.Outcome) en @FormatCoordinate(lastTurn.PlayerShot.Coordinate). </text>
+            }
+            @if (lastTurn.ComputerShot is not null)
+            {
+                <text>Ordinateur : @OutcomeLabel(lastTurn.ComputerShot.Outcome) en @FormatCoordinate(lastTurn.ComputerShot.Coordinate).</text>
+            }
+        </p>
+    }
+
+    <div class="d-flex flex-wrap gap-5">
+        <div>
+            <h2>Votre flotte</h2>
+            <BattleGrid Grid="state.OwnGrid" Interactive="false" />
+        </div>
+        <div>
+            <h2>Flotte adverse</h2>
+            <BattleGrid Grid="state.OpponentGrid" Interactive="CanShoot" OnCellClick="FireShotAsync" />
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public Guid GameId { get; set; }
+
+    private GameStateDto? state;
+    private Fb.ShotTurnReply? lastTurn;
+    private string? errorMessage;
+    private bool isFiring;
+
+    private bool CanShoot => state is { Status: GameOutcome.InProgress } && !isFiring;
+
+    private string StatusLabel => state!.Status switch
+    {
+        GameOutcome.InProgress => "Partie en cours — à vous de tirer.",
+        GameOutcome.Won => "Victoire ! Vous avez coulé toute la flotte adverse.",
+        GameOutcome.Lost => "Défaite... votre flotte a été coulée.",
+        _ => string.Empty
+    };
+
+    protected override async Task OnInitializedAsync() => await ReloadStateAsync();
+
+    private async Task ReloadStateAsync()
+    {
+        errorMessage = null;
+
+        try
+        {
+            state = await GameClient.GetGameStateAsync(GameId);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"GetGameStateAsync failed: {ex}");
+            errorMessage = "Impossible de charger la partie. Vérifiez que l'API est démarrée puis réessayez.";
+        }
+    }
+
+    private async Task FireShotAsync((int Row, int Col) coordinate)
+    {
+        if (!CanShoot)
+            return;
+
+        isFiring = true;
+        errorMessage = null;
+
+        try
+        {
+            lastTurn = await ShotClient.FireShotAsync(GameId, coordinate.Row, coordinate.Col);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"FireShotAsync failed: {ex}");
+            errorMessage = "Le tir n'a pas pu être joué. Vérifiez la connexion puis réessayez.";
+            isFiring = false;
+            return;
+        }
+
+        try
+        {
+            // ShotTurnReply carries only this turn's results (AD-2); re-fetch the full state for both grids.
+            state = await GameClient.GetGameStateAsync(GameId);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"GetGameStateAsync (post-shot) failed: {ex}");
+            // The shot already succeeded server-side. Patch it into the locally held state so the cell is not
+            // offered again by BattleGrid's already-shot guard, instead of leaving state silently stale.
+            ApplyLocalShotFallback(lastTurn);
+            errorMessage = "Le tir a été joué, mais l'actualisation de la partie a échoué. Réessayez.";
+        }
+        finally
+        {
+            isFiring = false;
+        }
+    }
+
+    /// <summary>
+    /// Merges a resolved turn's shot(s) into the locally held <see cref="state"/> when the follow-up state
+    /// refresh fails, so BattleGrid's client-side "already shot" guard stays correct without a server round trip.
+    /// </summary>
+    private void ApplyLocalShotFallback(Fb.ShotTurnReply turn)
+    {
+        if (state is null)
+            return;
+
+        var opponentShots = state.OpponentGrid.Shots.ToList();
+        if (turn.PlayerShot is not null)
+            opponentShots.Add(ToShotResultDto(turn.PlayerShot));
+
+        var ownShots = state.OwnGrid.Shots.ToList();
+        if (turn.ComputerShot is not null)
+            ownShots.Add(ToShotResultDto(turn.ComputerShot));
+
+        state = new GameStateDto
+        {
+            GameId = state.GameId,
+            Status = state.Status,
+            OwnGrid = new GridViewDto { Ships = state.OwnGrid.Ships, Shots = ownShots },
+            OpponentGrid = new GridViewDto { Ships = state.OpponentGrid.Ships, Shots = opponentShots }
+        };
+    }
+
+    private static ShotResultDto ToShotResultDto(Fb.ShotResult shot) => new()
+    {
+        Coordinate = new CoordinateDto(shot.Coordinate.Row, shot.Coordinate.Col),
+        Outcome = shot.Outcome switch
+        {
+            Fb.ShotOutcome.Miss => ShotOutcome.Miss,
+            Fb.ShotOutcome.Hit => ShotOutcome.Hit,
+            Fb.ShotOutcome.Sunk => ShotOutcome.Sunk,
+            _ => ShotOutcome.Miss
+        }
+    };
+
+    private static string OutcomeLabel(Fb.ShotOutcome outcome) => outcome switch
+    {
+        Fb.ShotOutcome.Miss => "manqué",
+        Fb.ShotOutcome.Hit => "touché",
+        Fb.ShotOutcome.Sunk => "coulé",
+        _ => "inconnu"
+    };
+
+    private static string FormatCoordinate(Fb.Coordinate coordinate) =>
+        $"{(char)('A' + coordinate.Col)}{coordinate.Row + 1}";
+}

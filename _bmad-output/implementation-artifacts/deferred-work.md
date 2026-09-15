@@ -16,3 +16,21 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-5-api-jouer-un-coup-via-grpc.md`
   summary: <NoWarn>CS0436</NoWarn> sur BattleShip.Tests.csproj masque toute future collision de types sans rapport avec la génération protobuf.
   evidence: Signalé par Blind Hunter. Compromis déjà documenté dans le fichier (la génération double proto server+client est la cause attendue) ; pas de meilleure option simple identifiée pour l'instant.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-interface-blazor-créer-une-partie-et-jouer.md`
+  summary: GameHttpClient (BattleShip.App) n'a aucun test de régression sur ses options JSON (camelCase) ; le bug corrigé cette story ne serait pas rattrapé par dotnet test.
+  evidence: Signalé pré-vérifié par Verification Gap. Le correctif propre demande une ProjectReference Tests→App non prévue par AD-7 ; à revoir si un projet de test App est introduit plus tard.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-interface-blazor-créer-une-partie-et-jouer.md`
+  summary: En-têtes CORS exposés (Grpc-Status/Message/Encoding) non couverts par un test cross-origin automatisé.
+  evidence: Signalé par Verification Gap. Vérifié manuellement (curl préflight) cette story ; suffisant au regard du scope AD-7 (pas de test Blazor).
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-interface-blazor-créer-une-partie-et-jouer.md`
+  summary: Garde "case déjà jouée" et verrouillage de fin de partie sur BattleGrid non couverts par un test de composant (pas d'outillage bUnit dans le dépôt).
+  evidence: Signalé par Verification Gap. Deux AC de cette story en dépendent ; vérifié manuellement (Playwright scratch + revue de code) mais non pinné par un test répétable.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-interface-blazor-créer-une-partie-et-jouer.md`
+  summary: URLs de l'API et origines CORS codées en dur dans Program.cs (App et API), pas de couche de configuration.
+  evidence: Signalé par Blind Hunter. Hors scope (déploiement = non-goal explicite du spec) ; pertinent seulement si le projet doit tourner ailleurs qu'en local.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-interface-blazor-créer-une-partie-et-jouer.md`
+  summary: Les cellules cliquables de BattleGrid n'ont aucune accessibilité clavier (tabindex/role/onkeydown).
+  evidence: Signalé par Blind Hunter. Extension optionnelle listée en backlog (accessibilité, diapo 60 du cours), pas un AC du socle.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-6-interface-blazor-créer-une-partie-et-jouer.md`
+  summary: Fenêtre de course théorique si un second clic passe avant que le paramètre Interactive de BattleGrid ne se mette à jour après un premier tir.
+  evidence: Signalé par Edge Case Hunter (maybe-false). Dépend du scheduling interne du renderer Blazor WASM ; nécessiterait un test de stress navigateur réel pour trancher.
