@@ -75,9 +75,6 @@ yarn-error.log*
 .bmad/*.local.json
 .bmad-core/temp/
 
-# Artefacts et sorties temporaires des agents BMAD
-_bmad-output/
-
 # Fichiers de travail temporaires générés par les agents
 *.scratchpad.md
 *.tmp.md
