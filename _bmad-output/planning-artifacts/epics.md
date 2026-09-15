@@ -241,3 +241,95 @@ So that je peux dérouler une partie complète du début à la victoire/défaite
 **Given** `BattleShip.App`
 **When** on inspecte ses références de projet
 **Then** aucune `ProjectReference` vers `BattleShip.API` n'existe ; seuls les appels réseau (HTTP, gRPC-Web) relient les deux projets (AD-8)
+
+## Epic 2: Adversaire plus fort, historique et statistiques
+
+Le joueur choisit la difficulté avant de lancer une partie (dont un adversaire "difficile" en mode chasse/cible), suit l'historique des coups en direct pendant la partie, et consulte des statistiques (tirs, taux de réussite, durée) à la fin de partie.
+
+### Story 2.1: Adversaire ordinateur — stratégie difficile (chasse/cible)
+
+As a joueur,
+I want affronter un adversaire ordinateur capable de cibler intelligemment mes navires après un coup touché,
+So that la partie reste intéressante au-delà du tir purement aléatoire. (FR4, CAP-4, CAP-12, AD-6)
+
+**Acceptance Criteria:**
+
+**Given** `HardOpponentStrategy` implémentant `IOpponentStrategy`
+**When** aucun tir précédent n'est touché (phase de recherche)
+**Then** elle tire uniquement sur les cases d'une couleur du damier (parité `(x + y) % 2 == 0`), parmi les cases non encore jouées
+
+**Given** un tir précédent touché non encore coulé (phase de ciblage)
+**When** `HardOpponentStrategy.ChooseShot` est appelée
+**Then** elle teste une des 4 cases adjacentes non encore jouées à ce tir touché
+
+**Given** deux tirs touchés alignés (même ligne ou colonne) sur un navire non coulé
+**When** `HardOpponentStrategy.ChooseShot` est appelée
+**Then** elle poursuit dans l'axe identifié jusqu'à couler le navire ou essuyer un échec, puis revient en phase de recherche
+
+**Given** la stratégie difficile
+**When** des tests unitaires s'exécutent
+**Then** ils couvrent les trois phases (recherche, ciblage, alignement) et vérifient qu'elle ne rejoue jamais une case déjà jouée (FR8)
+
+### Story 2.2: Sélection de la difficulté avant la partie
+
+As a joueur,
+I want choisir la difficulté de l'ordinateur (facile ou difficile) au moment de créer une partie,
+So that je peux adapter le niveau de challenge à mon envie. (FR12, CAP-12)
+
+**Acceptance Criteria:**
+
+**Given** la page `NewGame.razor`
+**When** le joueur crée une partie
+**Then** un sélecteur "facile / difficile" est proposé avant la création
+
+**Given** une requête `POST /games` avec `Difficulty = Hard`
+**When** l'endpoint traite la création
+**Then** la partie est enregistrée avec `HardOpponentStrategy` comme adversaire (Story 2.1) ; `Difficulty = Easy` utilise `EasyOpponentStrategy` (Story 1.3)
+
+**Given** une requête `POST /games` sans valeur de difficulté ou avec une valeur invalide
+**When** FluentValidation traite la requête
+**Then** elle est rejetée avec un `ValidationProblem` explicite
+
+**Given** l'endpoint `POST /games` et le sélecteur Blazor
+**When** des tests d'intégration s'exécutent
+**Then** ils vérifient qu'une partie créée en mode difficile utilise bien `HardOpponentStrategy` pour ses ripostes (`FireShot`, Story 1.5) (FR8)
+
+### Story 2.3: Historique des coups joués
+
+As a joueur,
+I want voir la liste chronologique des coups joués (par qui, où, avec quel résultat) pendant la partie,
+So that je peux suivre le déroulement de la partie en cours. (FR10, CAP-10, AD-10)
+
+**Acceptance Criteria:**
+
+**Given** `Game` qui applique un tir (joueur ou ordinateur)
+**When** le tir est résolu
+**Then** un `Shot` horodaté est ajouté à l'historique de la partie, portant `Side` (`Human`/`Computer`), la coordonnée et le résultat
+
+**Given** la page `Play.razor` avec plusieurs tirs déjà joués
+**When** la vue se met à jour après un tour (`ShotTurnReply`, Story 1.5)
+**Then** l'historique affiché liste chaque coup dans l'ordre chronologique, avec son camp, sa coordonnée et son résultat
+
+**Given** l'historique de la partie
+**When** un test de composant ou d'intégration s'exécute après plusieurs tours
+**Then** il vérifie que l'ordre et le contenu de l'historique affiché correspondent aux coups réellement joués (FR8)
+
+### Story 2.4: Statistiques de fin de partie
+
+As a joueur,
+I want voir un récapitulatif (nombre de tirs, taux de réussite, durée) pour chaque camp à la fin de la partie,
+So that je peux évaluer ma performance et celle de l'ordinateur. (FR11, CAP-11, AD-10)
+
+**Acceptance Criteria:**
+
+**Given** une partie terminée (`Won`/`Lost`, Story 1.2) avec son historique de tirs (Story 2.3)
+**When** les statistiques sont calculées
+**Then** pour chaque `Side`, le nombre de tirs, le nombre de touches, le taux de réussite (touches / tirs) et la durée (entre création et fin de partie) sont corrects
+
+**Given** la fin de partie détectée côté Blazor
+**When** l'interface affiche `Summary.razor`
+**Then** les statistiques des deux camps sont visibles à l'écran
+
+**Given** le calcul des statistiques
+**When** un test unitaire s'exécute avec un historique de tirs connu
+**Then** il vérifie que les valeurs calculées (tirs, taux de réussite, durée) correspondent exactement aux données d'entrée (FR8)
