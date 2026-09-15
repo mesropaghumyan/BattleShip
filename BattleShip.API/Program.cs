@@ -8,11 +8,24 @@ using BattleShip.Models.Domain;
 using BattleShip.Models.Domain.Opponent;
 using FluentValidation;
 
+const string AppCorsPolicy = "AppCors";
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Limited to BattleShip.App's own origins (AD-8: no wildcard). Grpc-Status/Grpc-Message/Grpc-Encoding are
+// exposed so the gRPC-Web client (Grpc.Net.Client.Web) can read them from the browser.
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(AppCorsPolicy, policy => policy
+        .WithOrigins("https://localhost:7297", "http://localhost:5277")
+        .AllowAnyHeader()
+        .AllowAnyMethod()
+        .WithExposedHeaders("Grpc-Status", "Grpc-Message", "Grpc-Encoding"));
+});
 
 // Enums are exchanged as their names (e.g. "Easy", "Hit") rather than raw integers over the wire.
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -47,6 +60,8 @@ if (app.Environment.IsDevelopment())
 app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
+
+app.UseCors(AppCorsPolicy);
 
 app.UseGrpcWeb();
 

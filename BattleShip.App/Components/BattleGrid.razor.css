@@ -1,0 +1,46 @@
+.battle-grid {
+    border-collapse: collapse;
+}
+
+.battle-grid th {
+    width: 2rem;
+    height: 2rem;
+    text-align: center;
+    font-weight: normal;
+    color: #6c757d;
+}
+
+.battle-cell {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid #adb5bd;
+    background-color: #eaf6ff;
+}
+
+.battle-cell-clickable {
+    cursor: pointer;
+}
+
+.battle-cell-clickable:hover {
+    background-color: #cfeaff;
+}
+
+.battle-cell-ship {
+    background-color: #6c757d;
+}
+
+.battle-cell-miss {
+    background-color: #dee2e6;
+}
+
+.battle-cell-hit {
+    background-color: #fd7e14;
+}
+
+.battle-cell-sunk {
+    background-color: #dc3545;
+}
+
+.battle-cell-unknown {
+    background-color: #ffe066;
+}

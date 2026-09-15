@@ -10,10 +10,20 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.12" PrivateAssets="all" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.83.0" />
+    <PackageReference Include="Grpc.Net.Client.Web" Version="2.80.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.36.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.83.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BattleShip.Models\BattleShip.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- battlefield.proto lives outside the 4 projects, at the repo root, shared by relative path
+         (AD-8, AD-9) rather than a ProjectReference. Client-only codegen: the App never hosts the service. -->
+    <Protobuf Include="../Protos/battlefield.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

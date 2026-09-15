@@ -1,0 +1,92 @@
+@using DomainGrid = BattleShip.Models.Domain.Grid
+
+<table class="battle-grid">
+    <thead>
+        <tr>
+            <th></th>
+            @for (var col = 0; col < GridSize; col++)
+            {
+                <th>@ColumnLabel(col)</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @for (var row = 0; row < GridSize; row++)
+        {
+            var currentRow = row;
+            <tr>
+                <th>@(row + 1)</th>
+                @for (var col = 0; col < GridSize; col++)
+                {
+                    var currentCol = col;
+                    <td class="@CellCssClass(currentRow, currentCol)"
+                        title="@($"{ColumnLabel(currentCol)}{currentRow + 1}")"
+                        @onclick="() => HandleClickAsync(currentRow, currentCol)">
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private const int GridSize = DomainGrid.Size;
+
+    /// <summary>Grid to render: own grid (all own ships) or opponent grid (sunk ships only, per AD-2).</summary>
+    [Parameter, EditorRequired]
+    public required GridViewDto Grid { get; set; }
+
+    /// <summary>Whether unshot cells are clickable. False for the player's own grid.</summary>
+    [Parameter]
+    public bool Interactive { get; set; }
+
+    /// <summary>Raised with 0-indexed (Row, Col) when an unshot cell is clicked while <see cref="Interactive"/>.</summary>
+    [Parameter]
+    public EventCallback<(int Row, int Col)> OnCellClick { get; set; }
+
+    private static string ColumnLabel(int col) => ((char)('A' + col)).ToString();
+
+    private ShotResultDto? ShotAt(int row, int col) =>
+        Grid.Shots.FirstOrDefault(shot => shot.Coordinate.Row == row && shot.Coordinate.Col == col);
+
+    private bool HasShipAt(int row, int col) =>
+        Grid.Ships.Any(ship => ship.Cells.Any(cell => cell.Row == row && cell.Col == col));
+
+    private string CellCssClass(int row, int col)
+    {
+        var classes = new List<string> { "battle-cell" };
+
+        var shot = ShotAt(row, col);
+        if (shot is not null)
+        {
+            classes.Add(shot.Outcome switch
+            {
+                ShotOutcome.Miss => "battle-cell-miss",
+                ShotOutcome.Hit => "battle-cell-hit",
+                ShotOutcome.Sunk => "battle-cell-sunk",
+                _ => "battle-cell-unknown"
+            });
+        }
+        else if (HasShipAt(row, col))
+        {
+            classes.Add("battle-cell-ship");
+        }
+
+        if (Interactive && shot is null)
+            classes.Add("battle-cell-clickable");
+
+        return string.Join(' ', classes);
+    }
+
+    private async Task HandleClickAsync(int row, int col)
+    {
+        if (!Interactive)
+            return;
+
+        // Client-side guard: a cell already shot never triggers a new network call.
+        if (ShotAt(row, col) is not null)
+            return;
+
+        await OnCellClick.InvokeAsync((row, col));
+    }
+}
