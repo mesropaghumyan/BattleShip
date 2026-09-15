@@ -333,3 +333,65 @@ So that je peux évaluer ma performance et celle de l'ordinateur. (FR11, CAP-11,
 **Given** le calcul des statistiques
 **When** un test unitaire s'exécute avec un historique de tirs connu
 **Then** il vérifie que les valeurs calculées (tirs, taux de réussite, durée) correspondent exactement aux données d'entrée (FR8)
+
+## Epic 3: Traçabilité IA et préparation de la remise
+
+L'équipe dispose de PROMPTS.md, docs/adr/ et REVUE-IA.md à jour et reliés à des preuves reproductibles, et d'un README.md permettant à un autre binôme de lancer et comprendre le projet. Les entrées PROMPTS/ADR/REVUE-IA se documentent au fil de l'eau dès l'Epic 1 ; cette story met en place le processus dès le début du sprint.
+
+### Story 3.1: Mise en place du processus de traçabilité IA
+
+As a équipe,
+I want disposer dès le début du sprint des gabarits PROMPTS.md, docs/adr/ et REVUE-IA.md,
+So that chaque décision et échange IA décisif peut être consigné au fil de l'eau, sans rattrapage de dernière minute. (FR9, CAP-9)
+
+**Acceptance Criteria:**
+
+**Given** la racine du dépôt
+**When** le processus est mis en place (idéalement avant de démarrer l'Epic 1)
+**Then** `PROMPTS.md` existe avec le gabarit (date/sujet, outil, contexte, prompt, réponse résumée, décision, vérification, preuve)
+**And** `docs/adr/` existe avec un gabarit d'ADR (statut/date, contexte, options, décision, conséquences, vérification, références)
+**And** `REVUE-IA.md` existe avec le gabarit de revue (proposition, hypothèse, expérience, observation, décision, preuves)
+
+**Given** les gabarits en place
+**When** l'équipe travaille sur l'Epic 1 et l'Epic 2
+**Then** chaque échange IA décisif, chaque décision d'architecture déjà actée (ex. AD-1 à AD-11 du spine) et chaque revue de proposition IA sont consignés au fur et à mesure, avec un lien vers le commit ou le test concerné
+
+### Story 3.2: Consolidation des livrables IA avant remise
+
+As a équipe,
+I want vérifier et compléter PROMPTS.md, docs/adr/ et REVUE-IA.md avant la remise,
+So that les livrables IA respectent les exigences minimales du cours (≥ 3 revues argumentées, décisions structurantes documentées). (FR9, CAP-9)
+
+**Acceptance Criteria:**
+
+**Given** `REVUE-IA.md` en fin de sprint
+**When** l'équipe relit le fichier
+**Then** il contient au moins 3 revues, chacune avec une hypothèse vérifiable, une expérience décrite avant exécution, une observation réelle, une décision justifiée et un lien vers un commit/test reproductible
+
+**Given** `docs/adr/`
+**When** l'équipe relit les ADR
+**Then** chaque décision structurante réellement prise (ex. choix du store en mémoire, découpage HTTP/gRPC, stratégie adverse) a un ADR à jour avec un statut (accepté/remplacé)
+
+**Given** `PROMPTS.md`
+**When** l'équipe relit le fichier
+**Then** il couvre les échanges IA réellement décisifs du projet (pas une transcription intégrale), chacun relié à une décision et une preuve
+
+### Story 3.3: README de remise
+
+As a équipe,
+I want un README.md complet et vérifié par un tiers,
+So that un autre binôme peut lancer et comprendre le projet sans aide supplémentaire, condition de la remise. (NFR7, NFR8, NFR9)
+
+**Acceptance Criteria:**
+
+**Given** un binôme externe sans connaissance préalable du projet
+**When** il suit uniquement les instructions du `README.md`
+**Then** il parvient à restaurer les dépendances, compiler, lancer les tests, démarrer l'API et l'application, et jouer une partie complète
+
+**Given** le `README.md`
+**When** l'équipe le relit avant remise
+**Then** il documente les fonctionnalités livrées, les arbitrages du backlog (ce qui a été choisi/écarté et pourquoi) et les limites connues (ex. état en mémoire uniquement, pas de multijoueur)
+
+**Given** l'historique Git du dépôt
+**When** l'équipe vérifie avant remise
+**Then** les commits sont relus par le binôme et le travail est lisible (NFR7) ; le commit final est poussé avant le début du QCM du jour 5 (NFR8)
