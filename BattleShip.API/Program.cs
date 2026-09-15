@@ -59,8 +59,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseExceptionHandler();
 
-app.UseHttpsRedirection();
-
+// No HTTPS redirection: local dev runs API and App on plain HTTP (default "http" launch profile) so the
+// demo works with no dev-certs trust step. Re-add if this project is ever hosted beyond localhost.
 app.UseCors(AppCorsPolicy);
 
 app.UseGrpcWeb();

@@ -12,7 +12,9 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 
 // BattleShip.API's own address (AD-8: no ProjectReference, network calls only). Game creation and state
 // reads travel over plain HTTP; FireShot travels over gRPC-Web on the same origin (AD-4).
-const string ApiBaseAddress = "https://localhost:7164";
+// Plain HTTP (API's "http" launch profile, the one dotnet run uses without an explicit --launch-profile) so
+// running both projects with the default profile just works, with no dev-certs trust step required.
+const string ApiBaseAddress = "http://localhost:5268";
 
 builder.Services.AddScoped(_ => new HttpClient { BaseAddress = new Uri(ApiBaseAddress) });
 builder.Services.AddScoped<GameHttpClient>();
