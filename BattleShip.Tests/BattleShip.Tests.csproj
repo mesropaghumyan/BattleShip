@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\BattleShip.Models\BattleShip.Models.csproj" />
     <ProjectReference Include="..\BattleShip.API\BattleShip.API.csproj" />
   </ItemGroup>
 
