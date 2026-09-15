@@ -54,4 +54,32 @@ public sealed class Grid
 
         return hitShip.Cells.All(_shotsPlayed.Contains) ? ShotOutcome.Sunk : ShotOutcome.Hit;
     }
+
+    /// <summary>
+    /// Returns the outcome of a shot played at <paramref name="coordinate"/>, or <c>null</c> if that coordinate has not been played yet.
+    /// Does not leak unhit ship coordinates.
+    /// </summary>
+    public ShotOutcome? GetShotOutcome(Coordinate coordinate)
+    {
+        if (!_shotsPlayed.Contains(coordinate))
+            return null;
+
+        var hitShip = _ships.FirstOrDefault(ship => ship.Occupies(coordinate));
+        if (hitShip is null)
+            return ShotOutcome.Miss;
+
+        return hitShip.Cells.All(_shotsPlayed.Contains) ? ShotOutcome.Sunk : ShotOutcome.Hit;
+    }
+
+    /// <summary>
+    /// Returns all coordinates played on this grid that hit a ship which has not yet been fully sunk.
+    /// </summary>
+    public IReadOnlyCollection<Coordinate> UnsunkHits =>
+        _shotsPlayed
+            .Where(shot =>
+            {
+                var ship = _ships.FirstOrDefault(s => s.Occupies(shot));
+                return ship is not null && !ship.Cells.All(_shotsPlayed.Contains);
+            })
+            .ToList();
 }
