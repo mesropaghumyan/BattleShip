@@ -10,10 +10,18 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Grpc.AspNetCore" Version="2.83.0" />
+    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.80.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\BattleShip.Models\BattleShip.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- battlefield.proto lives outside the 4 projects, at the repo root, shared by relative path
+         (AD-8, AD-9) rather than a ProjectReference. -->
+    <Protobuf Include="../Protos/battlefield.proto" GrpcServices="Server" />
   </ItemGroup>
 
 </Project>

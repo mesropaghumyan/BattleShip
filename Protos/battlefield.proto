@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option csharp_namespace = "BattleShip.Grpc";
+
+package battlefield;
+
+// Fires a shot on behalf of the human player and, in the same call, resolves the computer's
+// immediate riposte when the game is not yet over (AD-4). The only gRPC-exposed action; game
+// creation and state reads stay on HTTP (AD-4).
+service Battlefield {
+  rpc FireShot (FireShotRequest) returns (ShotTurnReply);
+}
+
+// GameId is carried as a string (canonical GUID representation) since protobuf has no native
+// GUID type; FireShotRequestValidator checks it is syntactically a GUID before any domain call
+// (AD-5). Row/Col are 0-indexed, matching the domain's Coordinate (see ARCHITECTURE-SPINE.md).
+message FireShotRequest {
+  string game_id = 1;
+  int32 row = 2;
+  int32 col = 3;
+}
+
+message Coordinate {
+  int32 row = 1;
+  int32 col = 2;
+}
+
+enum ShotOutcome {
+  SHOT_OUTCOME_UNSPECIFIED = 0;
+  MISS = 1;
+  HIT = 2;
+  SUNK = 3;
+}
+
+// Game status relative to the human player, mirrored from the domain's GameStatus + Winner
+// (see BattleShip.API/Grpc/BattlefieldGrpcService.cs).
+enum GameOutcome {
+  GAME_OUTCOME_UNSPECIFIED = 0;
+  IN_PROGRESS = 1;
+  WON = 2;
+  LOST = 3;
+}
+
+message ShotResult {
+  Coordinate coordinate = 1;
+  ShotOutcome outcome = 2;
+}
+
+// Only the turn's results, never the full grids (AD-2): the client re-calls GET /games/{id} for
+// full state. ComputerShot is absent (message field presence) when the player's shot ended the
+// game, since the computer never gets to fire.
+message ShotTurnReply {
+  ShotResult player_shot = 1;
+  ShotResult computer_shot = 2;
+  GameOutcome status = 3;
+}

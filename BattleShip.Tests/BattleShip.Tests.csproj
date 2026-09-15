@@ -5,6 +5,12 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <!-- This project both generates its own gRPC client stub for battlefield.proto (AD-9, "client role, as the
+         App will be in Story 1.6") and holds a ProjectReference to BattleShip.API, which generates the server
+         stub from the same .proto: the message types are then compiled once per assembly. CS0436 flags this
+         expected redefinition; the locally generated type always wins, which is what a project acting as the
+         client needs. -->
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +19,9 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.83.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.36.1" />
+    <PackageReference Include="Grpc.Tools" Version="2.83.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +31,12 @@
   <ItemGroup>
     <ProjectReference Include="..\BattleShip.Models\BattleShip.Models.csproj" />
     <ProjectReference Include="..\BattleShip.API\BattleShip.API.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Same contract as the API's server stub, generated here in the client role — this is what
+         BattleShip.App will also do in Story 1.6 (AD-9). -->
+    <Protobuf Include="../Protos/battlefield.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

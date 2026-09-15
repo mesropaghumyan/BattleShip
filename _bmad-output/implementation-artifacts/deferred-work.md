@@ -10,3 +10,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-4-api-créer-une-partie-et-consulter-son-état.md`
   summary: Métadonnées OpenAPI absentes sur POST /games et GET /games/{id} (WithName, Produces<T>, ProducesProblem).
   evidence: Signalé par Blind Hunter. Purement documentaire, aucun AC ni test ne l'exige ; à revoir si la Story 1.6 ou la remise a besoin d'une doc OpenAPI plus riche.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-5-api-jouer-un-coup-via-grpc.md`
+  summary: Incohérence dans battlefield.proto — FireShotRequest utilise row/col bruts, ShotResult les enveloppe dans un message Coordinate.
+  evidence: Signalé par Blind Hunter. Corriger casserait le contrat déjà implémenté/testé (validator, service, 71 tests). À revoir si des auteurs clients (Story 1.6) trouvent l'incohérence gênante en pratique.
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-5-api-jouer-un-coup-via-grpc.md`
+  summary: <NoWarn>CS0436</NoWarn> sur BattleShip.Tests.csproj masque toute future collision de types sans rapport avec la génération protobuf.
+  evidence: Signalé par Blind Hunter. Compromis déjà documenté dans le fichier (la génération double proto server+client est la cause attendue) ; pas de meilleure option simple identifiée pour l'instant.

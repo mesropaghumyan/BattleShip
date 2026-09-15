@@ -1,9 +1,11 @@
 using System.Text.Json.Serialization;
 using BattleShip.API.Endpoints;
+using BattleShip.API.Grpc;
 using BattleShip.API.Services;
 using BattleShip.API.State;
 using BattleShip.API.Validation;
 using BattleShip.Models.Domain;
+using BattleShip.Models.Domain.Opponent;
 using FluentValidation;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,8 +22,15 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddSingleton<IGameStore, InMemoryGameStore>();
 builder.Services.AddSingleton<GameEngine>();
+// Only Difficulty.Easy exists this epic (CreateGameRequestValidator rejects Hard); the interface is used anyway
+// so adding Difficulty.Hard's HardOpponentStrategy later never requires touching GameService (AD-6).
+builder.Services.AddSingleton<IOpponentStrategy, EasyOpponentStrategy>();
 builder.Services.AddSingleton<GameService>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateGameRequestValidator>();
+
+// The sole transport for playing a shot (AD-4); gRPC-Web lets the future Blazor WASM client call it
+// (Story 1.6) without a plain gRPC-capable browser stack.
+builder.Services.AddGrpc();
 
 // Any unhandled exception (e.g. a Guid collision in IGameStore.Add, or GameEngine exhausting placement
 // attempts) is turned into a structured ProblemDetails response instead of a bare 500.
@@ -39,7 +48,10 @@ app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 
+app.UseGrpcWeb();
+
 app.MapGameEndpoints();
+app.MapGrpcService<BattlefieldGrpcService>().EnableGrpcWeb();
 
 app.Run();
 
