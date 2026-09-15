@@ -11,6 +11,19 @@ public sealed class Grid
     public IReadOnlyCollection<Coordinate> ShotsPlayed => _shotsPlayed;
     public bool IsFleetSunk => _ships.Count > 0 && _ships.All(ship => ship.Cells.All(_shotsPlayed.Contains));
 
+    public IEnumerable<Coordinate> RemainingCells()
+    {
+        for (var row = 0; row < Size; row++)
+        {
+            for (var col = 0; col < Size; col++)
+            {
+                var cell = new Coordinate(row, col);
+                if (!_shotsPlayed.Contains(cell))
+                    yield return cell;
+            }
+        }
+    }
+
     public void PlaceShip(Ship ship)
     {
         foreach (var cell in ship.Cells)
