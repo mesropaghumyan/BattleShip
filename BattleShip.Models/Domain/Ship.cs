@@ -17,7 +17,7 @@ public sealed class Ship
         Name = name;
         Size = size;
         Orientation = orientation;
-        Cells = cells;
+        Cells = cells.ToList();
     }
 
     public bool Occupies(Coordinate coordinate) => Cells.Contains(coordinate);
