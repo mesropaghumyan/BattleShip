@@ -82,3 +82,162 @@ Le joueur choisit la difficulté avant de lancer une partie (dont un adversaire 
 ### Epic 3: Traçabilité IA et préparation de la remise
 L'équipe dispose de PROMPTS.md, docs/adr/ et REVUE-IA.md à jour et reliés à des preuves reproductibles, et d'un README.md permettant à un autre binôme de lancer et comprendre le projet. Les entrées PROMPTS/ADR/REVUE-IA se documentent au fil de l'eau dès l'Epic 1 ; cet epic regroupe la mise en place du processus et l'audit final avant remise.
 **FRs covered:** FR9 (+ NFR7, NFR8, NFR9)
+
+## Epic 1: Partie jouable de bout en bout contre l'ordinateur
+
+Le joueur crée une partie, joue une partie complète contre un ordinateur (adversaire aléatoire), voit le résultat de chaque tir et la fin de partie. Le socle technique complet est démontrable : Minimal API, Blazor WebAssembly, gRPC-Web pour le tir, FluentValidation.
+
+### Story 1.1: Moteur de jeu — grilles et placement des flottes
+
+As a joueur,
+I want que le système prépare deux grilles 10x10 avec une flotte de 5 navires placée aléatoirement sans chevauchement ni débordement,
+So that une partie peut démarrer sur un état de jeu valide et équitable. (FR1, CAP-1, AD-1)
+
+**Acceptance Criteria:**
+
+**Given** une nouvelle partie à initialiser
+**When** le moteur (`GameEngine`) place la flotte (Porte-avions 5, Croiseur 4, Contre-torpilleur 3, Sous-marin 3, Torpilleur 2) sur une grille 10x10
+**Then** aucun navire ne chevauche un autre et aucun navire ne dépasse les limites de la grille
+**And** l'orientation de chaque navire est horizontale ou verticale, jamais diagonale
+
+**Given** deux grilles générées pour une même partie (joueur et ordinateur)
+**When** on inspecte les deux placements
+**Then** ils sont indépendants et générés séparément (aucune corrélation entre les deux flottes)
+
+**Given** le moteur de placement
+**When** des tests unitaires s'exécutent dans `BattleShip.Tests/Unit`
+**Then** ils couvrent : absence de chevauchement, absence de débordement, respect de la composition de flotte (FR8)
+**And** ces tests ne référencent que `BattleShip.Models` (AD-7)
+
+### Story 1.2: Moteur de jeu — résolution des tirs et fin de partie
+
+As a joueur,
+I want que chaque tir sur une grille soit résolu (raté/touché/coulé) et que la partie détecte sa propre fin,
+So that une partie complète peut se jouer jusqu'à la victoire. (FR1, FR3, CAP-1, CAP-3, AD-1)
+
+**Acceptance Criteria:**
+
+**Given** une partie initialisée (Story 1.1)
+**When** `Game` applique un tir sur une case non encore jouée
+**Then** le résultat est raté, touché, ou coulé (si toutes les cases du navire sont touchées) et l'état de la partie est mis à jour
+
+**Given** une case déjà jouée sur la même grille
+**When** un nouveau tir cible cette case
+**Then** le tir est rejeté sans modifier l'état de la partie et ne compte pas comme un nouveau coup
+
+**Given** tous les navires d'un camp sont coulés
+**When** le dernier tir touche le dernier navire restant
+**Then** la partie passe au statut `Won`/`Lost` selon le camp, et le camp gagnant est identifié
+
+**Given** une partie au statut `Won`/`Lost`
+**When** un nouveau tir est tenté
+**Then** il est rejeté (aucun coup accepté après la fin de partie)
+
+**Given** la logique de résolution des tirs
+**When** des tests unitaires s'exécutent
+**Then** ils couvrent chaque cas ci-dessus, y compris un test qui détecterait une règle violée (ex. compter un tir sur case déjà jouée) avant/après correction (FR8)
+
+### Story 1.3: Adversaire ordinateur — stratégie aléatoire (facile)
+
+As a joueur,
+I want que l'ordinateur joue des coups valides selon une stratégie aléatoire simple,
+So that je peux jouer une partie complète contre un adversaire cohérent. (FR4, CAP-4, AD-6)
+
+**Acceptance Criteria:**
+
+**Given** l'interface `IOpponentStrategy` définie dans le domaine
+**When** `EasyOpponentStrategy.ChooseShot` est appelée avec l'état de la grille visible par l'ordinateur
+**Then** elle retourne une coordonnée non encore jouée, choisie aléatoirement
+
+**Given** une grille où toutes les cases sauf une ont déjà été jouées
+**When** `EasyOpponentStrategy.ChooseShot` est appelée
+**Then** elle retourne cette dernière case restante (jamais une case déjà jouée)
+
+**Given** la stratégie facile
+**When** des tests unitaires s'exécutent
+**Then** ils vérifient qu'elle ne rejoue jamais une case déjà jouée et qu'elle respecte les mêmes règles de validité qu'un tir humain (FR8)
+
+### Story 1.4: API — créer une partie et consulter son état
+
+As a joueur,
+I want créer une partie via l'API et consulter son état sans voir les navires adverses non découverts,
+So that le client dispose d'un état de jeu fiable et respectueux du secret du jeu. (FR2, FR7, CAP-2, CAP-7, AD-2, AD-3, AD-5)
+
+**Acceptance Criteria:**
+
+**Given** une requête `POST /games` valide (difficulté = facile pour cet epic)
+**When** l'endpoint est appelé
+**Then** une nouvelle partie est créée via `GameService`/`IGameStore` (Singleton, `Mutate` atomique) et son `GameId` est retourné
+
+**Given** une requête `POST /games` invalide (ex. champ manquant)
+**When** l'endpoint est appelé
+**Then** FluentValidation rejette la requête avec un `ValidationProblem` (RFC 7807) et aucune partie n'est créée
+
+**Given** une partie existante
+**When** `GET /games/{id}` est appelé
+**Then** la réponse est un `GameStateDto` composite avec `OwnGrid` (navires du joueur visibles) et `OpponentGrid` (uniquement touché/raté/coulé, aucune coordonnée de navire adverse non coulé)
+
+**Given** un `GameId` inconnu
+**When** `GET /games/{id}` est appelé
+**Then** l'API retourne 404
+
+**Given** le endpoint et le mapping `GameViewMapper`
+**When** des tests d'intégration s'exécutent via `WebApplicationFactory`
+**Then** ils vérifient qu'aucune coordonnée de navire non coulé n'apparaît jamais dans `OpponentGrid` sérialisé (FR8, AD-2)
+
+### Story 1.5: API — jouer un coup via gRPC
+
+As a joueur,
+I want envoyer un tir via gRPC et recevoir en une seule réponse le résultat de mon tir et celui de la riposte de l'ordinateur,
+So that la boucle de jeu avance d'un tour complet à chaque action. (FR3, FR6, FR7, CAP-3, CAP-6, CAP-7, AD-3, AD-4, AD-9, AD-11)
+
+**Acceptance Criteria:**
+
+**Given** `battlefield.proto` défini dans `Protos/` (racine du dépôt, référencé par chemin relatif depuis API et App, sans `ProjectReference`)
+**When** le client Blazor appelle `BattlefieldService.FireShot` en gRPC-Web avec un `GameId` et une coordonnée valides
+**Then** le serveur applique le tir joueur via `GameService`, puis — si la partie n'est pas terminée — applique immédiatement la riposte de `EasyOpponentStrategy`
+**And** `ShotTurnReply` porte le résultat du tir joueur, le résultat du tir ordinateur (absent si la partie s'est terminée après le tir joueur), et le statut de partie
+
+**Given** une coordonnée hors grille
+**When** `FireShot` est appelé
+**Then** la réponse est une `RpcException` avec `StatusCode.InvalidArgument`
+
+**Given** une case déjà jouée ou une partie déjà terminée
+**When** `FireShot` est appelé
+**Then** la réponse est une `RpcException` avec `StatusCode.FailedPrecondition`
+
+**Given** un `GameId` inconnu
+**When** `FireShot` est appelé
+**Then** la réponse est une `RpcException` avec `StatusCode.NotFound`
+
+**Given** le service gRPC
+**When** des tests d'intégration s'exécutent via `WebApplicationFactory` (canal gRPC in-process)
+**Then** ils couvrent le round-trip complet (tir + riposte) et chaque cas d'erreur avec son code attendu (FR8)
+
+### Story 1.6: Interface Blazor — créer une partie et jouer
+
+As a joueur,
+I want créer une partie et jouer depuis le navigateur, avec les deux grilles et les résultats visibles,
+So that je peux dérouler une partie complète du début à la victoire/défaite sans quitter l'interface. (FR5, CAP-5, AD-8)
+
+**Acceptance Criteria:**
+
+**Given** la page `NewGame.razor`
+**When** le joueur crée une partie
+**Then** l'application appelle `POST /games` (`GameHttpClient`) et navigue vers `Play.razor` avec le `GameId` obtenu
+
+**Given** la page `Play.razor` avec une partie en cours
+**When** le joueur clique sur une case de la grille adverse
+**Then** l'application appelle `FireShot` en gRPC-Web (`ShotGrpcClient`) et affiche le résultat du tir joueur puis celui de l'ordinateur
+
+**Given** un incident de communication (API indisponible, erreur réseau)
+**When** l'appel HTTP ou gRPC échoue
+**Then** un message d'erreur est affiché sans bloquer le reste de l'interface (l'utilisateur peut réessayer)
+
+**Given** une partie qui se termine (`Won`/`Lost`)
+**When** le statut de partie change
+**Then** l'interface affiche clairement la fin de partie et le résultat (victoire/défaite)
+
+**Given** `BattleShip.App`
+**When** on inspecte ses références de projet
+**Then** aucune `ProjectReference` vers `BattleShip.API` n'existe ; seuls les appels réseau (HTTP, gRPC-Web) relient les deux projets (AD-8)
