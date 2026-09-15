@@ -146,4 +146,76 @@ public class GridTests
         grid.ResolveShot(new Coordinate(7, 5));
         Assert.True(grid.IsFleetSunk);
     }
+
+    [Fact]
+    public void GetShotOutcome_ReturnsNull_WhenCellHasNotBeenPlayed()
+    {
+        var grid = new Grid();
+
+        Assert.Null(grid.GetShotOutcome(new Coordinate(3, 3)));
+    }
+
+    [Fact]
+    public void GetShotOutcome_ReturnsMiss_WhenShotMisses()
+    {
+        var grid = new Grid();
+        grid.ResolveShot(new Coordinate(3, 3));
+
+        Assert.Equal(ShotOutcome.Miss, grid.GetShotOutcome(new Coordinate(3, 3)));
+    }
+
+    [Fact]
+    public void GetShotOutcome_ReturnsHit_WhenShipIsTouchedButNotSunk()
+    {
+        var grid = new Grid();
+        grid.PlaceShip(new Ship("Torpilleur", 2, Orientation.Horizontal,
+            [new Coordinate(1, 1), new Coordinate(1, 2)]));
+
+        grid.ResolveShot(new Coordinate(1, 1));
+
+        Assert.Equal(ShotOutcome.Hit, grid.GetShotOutcome(new Coordinate(1, 1)));
+    }
+
+    [Fact]
+    public void GetShotOutcome_ReturnsSunk_WhenShipIsFullySunk()
+    {
+        var grid = new Grid();
+        grid.PlaceShip(new Ship("Torpilleur", 2, Orientation.Horizontal,
+            [new Coordinate(1, 1), new Coordinate(1, 2)]));
+
+        grid.ResolveShot(new Coordinate(1, 1));
+        grid.ResolveShot(new Coordinate(1, 2));
+
+        Assert.Equal(ShotOutcome.Sunk, grid.GetShotOutcome(new Coordinate(1, 1)));
+        Assert.Equal(ShotOutcome.Sunk, grid.GetShotOutcome(new Coordinate(1, 2)));
+    }
+
+    [Fact]
+    public void UnsunkHits_ContainsOnlyHitsOnShipsNotYetSunk()
+    {
+        var grid = new Grid();
+        grid.PlaceShip(new Ship("Torpilleur", 2, Orientation.Horizontal,
+            [new Coordinate(1, 1), new Coordinate(1, 2)]));
+        grid.PlaceShip(new Ship("Sous-marin", 3, Orientation.Vertical,
+            [new Coordinate(5, 5), new Coordinate(6, 5), new Coordinate(7, 5)]));
+
+        // Un raté
+        grid.ResolveShot(new Coordinate(0, 0));
+        Assert.Empty(grid.UnsunkHits);
+
+        // Une touche sur le torpilleur (non coulé)
+        grid.ResolveShot(new Coordinate(1, 1));
+        Assert.Equal([new Coordinate(1, 1)], grid.UnsunkHits);
+
+        // Une touche sur le sous-marin (non coulé)
+        grid.ResolveShot(new Coordinate(5, 5));
+        Assert.Contains(new Coordinate(1, 1), grid.UnsunkHits);
+        Assert.Contains(new Coordinate(5, 5), grid.UnsunkHits);
+        Assert.Equal(2, grid.UnsunkHits.Count);
+
+        // On coule le torpilleur : ses cases ne doivent plus être dans UnsunkHits
+        grid.ResolveShot(new Coordinate(1, 2));
+        Assert.Equal([new Coordinate(5, 5)], grid.UnsunkHits);
+    }
 }
+
