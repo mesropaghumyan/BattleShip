@@ -1,6 +1,6 @@
 ---
 id: SPEC-battleship
-companions: []
+companions: [game-design.md]
 sources: [docs/cours_c_asp_net_bataille_navale.md]
 ---
 
@@ -15,7 +15,7 @@ Mandat pédagogique : le cours ASP.NET/C# (HTS Learning) demande à chaque binô
 ## Capabilities
 
 - **CAP-1**
-  - **intent:** Le moteur de jeu crée deux grilles, place les flottes aléatoirement et résout les tirs jusqu'à la fin de partie, indépendamment du transport (HTTP/gRPC) et de l'UI.
+  - **intent:** Le moteur de jeu crée deux grilles, place les flottes aléatoirement et résout les tirs jusqu'à la fin de partie, indépendamment du transport (HTTP/gRPC) et de l'UI. Grille et flotte détaillées dans `game-design.md`.
   - **success:** Des tests unitaires démontrent l'absence de chevauchement/débordement des navires, le secret des positions adverses non découvertes, le rejet sans effet d'un coup invalide, et la non-comptabilisation d'un tir sur une case déjà jouée.
 
 - **CAP-2**
@@ -27,16 +27,16 @@ Mandat pédagogique : le cours ASP.NET/C# (HTS Learning) demande à chaque binô
   - **success:** Une partie complète est démontrable de la création jusqu'à la victoire.
 
 - **CAP-4**
-  - **intent:** Un adversaire ordinateur joue des coups valides selon la même logique de validation que le joueur humain.
-  - **success:** Des tests montrent que l'adversaire respecte les règles de validité des coups (stratégie et difficulté au choix de l'équipe — voir Open Questions).
+  - **intent:** Un adversaire ordinateur joue des coups valides selon la même logique de validation que le joueur humain, avec un algorithme chasse/cible en mode difficile (détaillé dans `game-design.md`).
+  - **success:** Des tests montrent que l'adversaire respecte les règles de validité des coups et applique la bonne stratégie selon le mode choisi (voir CAP-12).
 
 - **CAP-5**
   - **intent:** Une interface Blazor WebAssembly permet de créer une partie, afficher les deux grilles avec les informations autorisées, jouer et voir les résultats / la fin de partie.
   - **success:** Une partie est jouable de bout en bout dans le navigateur ; un incident de communication est géré sans rendre l'interface inutilisable.
 
 - **CAP-6**
-  - **intent:** Au moins un échange fonctionnel entre le front et l'API transite en gRPC, accessible depuis le navigateur via gRPC-Web.
-  - **success:** Une réponse et une erreur attendue sont démontrables sur cet échange.
+  - **intent:** L'action de tir (jouer un coup) est exposée en gRPC via gRPC-Web depuis le client Blazor, en complément de HTTP pour la création/consultation de partie (détail dans `game-design.md`).
+  - **success:** Une réponse et une erreur attendue (coordonnée hors grille, coup déjà joué, partie terminée) sont démontrables sur cet échange.
 
 - **CAP-7**
   - **intent:** Les entrées serveur, HTTP comme gRPC, sont validées avec FluentValidation.
@@ -50,6 +50,18 @@ Mandat pédagogique : le cours ASP.NET/C# (HTS Learning) demande à chaque binô
   - **intent:** L'équipe documente son usage de l'IA via `PROMPTS.md` (échanges décisifs), `docs/adr/` (décisions structurantes) et `REVUE-IA.md` (revues argumentées).
   - **success:** Chaque fichier existe (racine ou `docs/`), contient au moins 3 revues dans `REVUE-IA.md`, et chaque entrée est reliée à une preuve reproductible (commit, test).
 
+- **CAP-10**
+  - **intent:** L'interface affiche un historique chronologique des coups joués (auteur, coordonnée, résultat) pendant la partie en cours.
+  - **success:** Après plusieurs tirs, l'historique liste chaque coup dans l'ordre, vérifié par un test de composant ou d'intégration.
+
+- **CAP-11**
+  - **intent:** À la fin d'une partie, un récapitulatif affiche le nombre de tirs, le taux de réussite et la durée de la partie pour chaque camp.
+  - **success:** Les valeurs affichées correspondent aux données de la partie jouée, vérifié par un test unitaire sur le calcul des statistiques.
+
+- **CAP-12**
+  - **intent:** L'utilisateur choisit la difficulté de l'adversaire (facile ou difficile) avant de lancer une partie.
+  - **success:** Un test vérifie qu'en mode facile l'adversaire tire aléatoirement sans logique de ciblage, et qu'en mode difficile il cible les cases adjacentes après un coup touché.
+
 ## Constraints
 
 - API imposée en ASP.NET Core Minimal API sur .NET 10 (pas de contrôleurs MVC).
@@ -62,24 +74,16 @@ Mandat pédagogique : le cours ASP.NET/C# (HTS Learning) demande à chaque binô
 - Délai fixe de 5 jours ; seul le commit poussé avant le début du QCM du jour 5 est évalué.
 - Livrables obligatoires au dépôt : `README.md` (lancement, fonctionnalités, arbitrages du backlog, limites), `PROMPTS.md`, `docs/adr/`, `REVUE-IA.md`.
 - Le projet doit pouvoir être lancé par un autre binôme en suivant uniquement le `README.md`.
+- État des parties conservé en mémoire uniquement (aucune base de données ni fichier de persistance).
 
 ## Non-goals
 
-- Une reproduction fidèle du jeu de plateau physique n'est pas demandée : règles précises, taille de grille et composition de la flotte sont des choix libres de l'équipe, pas une contrainte du socle.
+- Une reproduction fidèle du jeu de plateau physique n'est pas demandée : les règles précises restent un choix d'équipe (voir `game-design.md`), pas une contrainte du socle.
 - Le QCM individuel du jour 5 (sans IA, sans document) est une évaluation séparée, hors périmètre de construction de ce spec.
+- Persistance des parties (fichier ou base de données) hors périmètre : une partie ne survit pas à un redémarrage du serveur.
+- Multijoueur réseau (joueur contre joueur à distance) hors périmètre : seul le mode solo contre l'ordinateur est livré.
+- Déploiement en environnement hébergé hors périmètre : le projet est démontré en local.
 
 ## Success signal
 
-Une partie complète se joue dans le navigateur, de la création à la victoire, contre l'ordinateur, avec au moins un échange gRPC-Web démontrable (réponse + erreur attendue) et des entrées validées côté serveur. Les tests détectent une règle métier violée avant correction et passent après. Le dépôt est lançable par un autre binôme à partir du seul `README.md`, avec `PROMPTS.md`, `docs/adr/` et `REVUE-IA.md` (≥ 3 revues) à jour et reliés à des preuves.
-
-## Assumptions
-
-- Le "socle" (CAP-1 à CAP-9 + contraintes ci-dessus) est traité comme le périmètre minimal obligatoire ; les extensions de backlog évoquées par le cours (multijoueur, adversaire élaboré, sauvegarde, historique, statistiques, personnalisation, accessibilité, déploiement) sont hors socle et relèvent de décisions d'équipe non encore prises.
-
-## Open Questions
-
-- Quelle taille de grille et quelle composition de flotte (nombre/tailles des navires) pour CAP-1 ?
-- Quel algorithme/stratégie pour l'adversaire ordinateur (CAP-4) : tir aléatoire simple, ciblage après touche, difficulté progressive ?
-- Quelle opération précise sera exposée en gRPC (CAP-6) : création de partie, envoi d'un tir, autre ?
-- L'état des parties est-il conservé en mémoire uniquement, ou une persistance (fichier/BD) est-elle visée ?
-- Quelles extensions du backlog l'équipe priorise-t-elle dans les 5 jours : multijoueur, sauvegarde, historique/stats, accessibilité, déploiement, autre ?
+Une partie complète se joue dans le navigateur, de la création à la victoire, contre l'ordinateur, avec l'échange de tir en gRPC-Web démontrable (réponse + erreur attendue) et des entrées validées côté serveur. Les tests détectent une règle métier violée avant correction et passent après. L'historique des coups et les statistiques de fin de partie sont visibles, et la difficulté de l'adversaire est sélectionnable. Le dépôt est lançable par un autre binôme à partir du seul `README.md`, avec `PROMPTS.md`, `docs/adr/` et `REVUE-IA.md` (≥ 3 revues) à jour et reliés à des preuves.
