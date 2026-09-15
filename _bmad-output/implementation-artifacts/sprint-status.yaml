@@ -37,7 +37,7 @@ story_location: _bmad-output/implementation-artifacts
 development_status:
   epic-1: in-progress
   1-1-moteur-de-jeu-grilles-et-placement-des-flottes: done
-  1-2-moteur-de-jeu-résolution-des-tirs-et-fin-de-partie: review
+  1-2-moteur-de-jeu-résolution-des-tirs-et-fin-de-partie: done
   1-3-adversaire-ordinateur-stratégie-aléatoire-facile: backlog
   1-4-api-créer-une-partie-et-consulter-son-état: backlog
   1-5-api-jouer-un-coup-via-grpc: backlog
