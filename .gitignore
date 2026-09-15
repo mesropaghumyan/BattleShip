@@ -59,3 +59,28 @@ build/
 .idea/
 *.swp
 *.swo
+
+# ==========================================
+# BMAD & Environnement Agent / Node
+# ==========================================
+# Dépendances Node (si installation locale)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Fichiers d'état et caches de contexte BMAD / IA
+.bmad/cache/
+.bmad/sessions/
+.bmad/*.local.json
+.bmad-core/temp/
+
+# Artefacts et sorties temporaires des agents BMAD
+_bmad-output/
+
+# Fichiers de travail temporaires générés par les agents
+*.scratchpad.md
+*.tmp.md
+.claude/
+.cursor/
+.windsurf/
