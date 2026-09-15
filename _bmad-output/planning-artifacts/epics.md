@@ -1,5 +1,5 @@
 ---
-stepsCompleted: [step-01, step-02]
+stepsCompleted: [step-01, step-02, step-03]
 inputDocuments: ['_bmad-output/specs/spec-battleship/SPEC.md', '_bmad-output/specs/spec-battleship/game-design.md', '_bmad-output/planning-artifacts/architecture/architecture-BattleShip-2026-09-15/ARCHITECTURE-SPINE.md']
 ---
 
