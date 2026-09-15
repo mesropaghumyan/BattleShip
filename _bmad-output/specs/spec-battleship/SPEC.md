@@ -1,6 +1,6 @@
 ---
 id: SPEC-battleship
-companions: [game-design.md]
+companions: [game-design.md, ../../planning-artifacts/architecture/architecture-BattleShip-2026-09-15/ARCHITECTURE-SPINE.md]
 sources: [docs/cours_c_asp_net_bataille_navale.md]
 ---
 
