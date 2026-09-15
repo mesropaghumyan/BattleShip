@@ -70,5 +70,6 @@ dotnet clean BattleShip.slnx
 ## Notes
 
 - La solution racine est [BattleShip.slnx](BattleShip.slnx).
-- L’API expose un endpoint de démonstration sur `/weatherforecast`.
+- L’API expose deux endpoints de jeu : `POST /games` (crée une nouvelle partie et renvoie son identifiant) et
+  `GET /games/{id}` (consulte l’état d’une partie existante).
 - L’application Blazor démarre via le projet `BattleShip.App`.
