@@ -35,13 +35,13 @@ project_key: NOKEY
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 development_status:
-  epic-1: in-progress
+  epic-1: done
   1-1-moteur-de-jeu-grilles-et-placement-des-flottes: done
   1-2-moteur-de-jeu-résolution-des-tirs-et-fin-de-partie: done
   1-3-adversaire-ordinateur-stratégie-aléatoire-facile: done
   1-4-api-créer-une-partie-et-consulter-son-état: done
   1-5-api-jouer-un-coup-via-grpc: done
-  1-6-interface-blazor-créer-une-partie-et-jouer: review
+  1-6-interface-blazor-créer-une-partie-et-jouer: done
   epic-1-retrospective: optional
 
   epic-2: backlog
