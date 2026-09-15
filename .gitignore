@@ -16,12 +16,12 @@ coverage*.xml
 
 # Visual Studio / .NET user files
 .vs/
+.vscode/
 *.user
 *.userosscache
 *.suo
 *.sln.docstates
 *.rsuser
-.vscode
 
 # Rider / ReSharper
 _ReSharper*/
