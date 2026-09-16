@@ -9,6 +9,8 @@ public sealed class Game
     public Grid HumanGrid { get; }
     public Grid ComputerGrid { get; }
     public IReadOnlyList<Shot> ShotHistory => _shotHistory;
+    public DateTimeOffset CreatedAt { get; }
+    public DateTimeOffset? FinishedAt { get; private set; }
     public GameStatus Status { get; private set; } = GameStatus.InProgress;
     public Side? Winner { get; private set; }
     public Difficulty Difficulty { get; }
@@ -27,6 +29,7 @@ public sealed class Game
 
         HumanGrid = humanGrid;
         ComputerGrid = computerGrid;
+        CreatedAt = DateTimeOffset.UtcNow;
         Difficulty = difficulty;
         OpponentStrategy = opponentStrategy ?? ResolveStrategy(difficulty);
     }
@@ -56,8 +59,13 @@ public sealed class Game
         {
             Status = GameStatus.Finished;
             Winner = shooter;
+            FinishedAt = DateTimeOffset.UtcNow;
         }
 
         return outcome;
     }
+
+    public GameStatistics? GetStatistics() => FinishedAt is { } finishedAt
+        ? GameStatisticsCalculator.Calculate(_shotHistory, CreatedAt, finishedAt)
+        : null;
 }

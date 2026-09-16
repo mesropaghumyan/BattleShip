@@ -22,9 +22,25 @@ public static class GameViewMapper
             Difficulty = game.Difficulty,
             OwnGrid = ToOwnGridView(game.HumanGrid),
             OpponentGrid = ToOpponentGridView(game.ComputerGrid),
-            ShotHistory = game.ShotHistory.Select(ToShotHistoryView).ToList()
+            ShotHistory = game.ShotHistory.Select(ToShotHistoryView).ToList(),
+            Statistics = ToStatisticsView(game.GetStatistics())
         };
     }
+
+    private static GameStatisticsDto? ToStatisticsView(GameStatistics? statistics) => statistics is null ? null : new()
+    {
+        Human = ToSideStatisticsView(statistics.Human),
+        Computer = ToSideStatisticsView(statistics.Computer),
+        Duration = statistics.Duration
+    };
+
+    private static SideStatisticsDto ToSideStatisticsView(SideStatistics statistics) => new()
+    {
+        ShotCount = statistics.ShotCount,
+        HitCount = statistics.HitCount,
+        HitRate = statistics.HitRate,
+        Duration = statistics.Duration
+    };
 
     private static ShotHistoryDto ToShotHistoryView(Shot shot) => new()
     {

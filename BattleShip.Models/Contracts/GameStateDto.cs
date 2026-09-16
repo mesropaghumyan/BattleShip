@@ -16,6 +16,7 @@ public sealed class GameStateDto
     public required GridViewDto OwnGrid { get; init; }
     public required GridViewDto OpponentGrid { get; init; }
     public required IReadOnlyList<ShotHistoryDto> ShotHistory { get; init; }
+    public GameStatisticsDto? Statistics { get; init; }
 }
 
 /// <summary>
@@ -57,4 +58,19 @@ public sealed class ShotHistoryDto
     public required CoordinateDto Coordinate { get; init; }
     public required ShotOutcome Outcome { get; init; }
     public required DateTimeOffset PlayedAt { get; init; }
+}
+
+public sealed class GameStatisticsDto
+{
+    public required SideStatisticsDto Human { get; init; }
+    public required SideStatisticsDto Computer { get; init; }
+    public required TimeSpan Duration { get; init; }
+}
+
+public sealed class SideStatisticsDto
+{
+    public required int ShotCount { get; init; }
+    public required int HitCount { get; init; }
+    public required decimal HitRate { get; init; }
+    public required TimeSpan Duration { get; init; }
 }

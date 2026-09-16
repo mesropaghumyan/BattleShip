@@ -73,6 +73,42 @@ else
             </ol>
         }
     </section>
+
+    @if (state.Statistics is not null)
+    {
+        <section class="mt-4" aria-labelledby="game-statistics-title">
+            <h2 id="game-statistics-title">Statistiques de fin de partie</h2>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th scope="col">Camp</th>
+                            <th scope="col">Tirs</th>
+                            <th scope="col">Touches</th>
+                            <th scope="col">Taux de réussite</th>
+                            <th scope="col">Durée</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Vous</th>
+                            <td>@state.Statistics.Human.ShotCount</td>
+                            <td>@state.Statistics.Human.HitCount</td>
+                            <td>@FormatHitRate(state.Statistics.Human.HitRate)</td>
+                            <td>@FormatDuration(state.Statistics.Human.Duration)</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Ordinateur</th>
+                            <td>@state.Statistics.Computer.ShotCount</td>
+                            <td>@state.Statistics.Computer.HitCount</td>
+                            <td>@FormatHitRate(state.Statistics.Computer.HitRate)</td>
+                            <td>@FormatDuration(state.Statistics.Computer.Duration)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    }
 }
 
 @code {
@@ -174,7 +210,8 @@ else
             Status = ToGameOutcome(turn.Status),
             OwnGrid = new GridViewDto { Ships = state.OwnGrid.Ships, Shots = ownShots },
             OpponentGrid = new GridViewDto { Ships = state.OpponentGrid.Ships, Shots = opponentShots },
-            ShotHistory = state.ShotHistory
+            ShotHistory = state.ShotHistory,
+            Statistics = state.Statistics
         };
     }
 
@@ -220,6 +257,13 @@ else
         Side.Computer => "Ordinateur",
         _ => "Inconnu"
     };
+
+    private static string FormatHitRate(decimal hitRate) => $"{hitRate:P0}";
+
+    private static string FormatDuration(TimeSpan duration) =>
+        duration.TotalHours >= 1
+            ? duration.ToString(@"h'h'\ mm'm'\ ss's'")
+            : duration.ToString(@"m'm'\ ss's'");
 
     private static string FormatCoordinate(Fb.Coordinate coordinate) =>
         $"{(char)('A' + coordinate.Col)}{coordinate.Row + 1}";
