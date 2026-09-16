@@ -19,6 +19,7 @@ public static class GameViewMapper
         {
             GameId = gameId,
             Status = ToOutcome(game),
+            Difficulty = game.Difficulty,
             OwnGrid = ToOwnGridView(game.HumanGrid),
             OpponentGrid = ToOpponentGridView(game.ComputerGrid)
         };

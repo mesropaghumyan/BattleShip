@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 using BattleShip.API.State;
 using BattleShip.Models.Contracts;
 using BattleShip.Models.Domain;
+using BattleShip.Models.Domain.Opponent;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -53,23 +54,19 @@ public sealed class GameEndpointsTests : IClassFixture<WebApplicationFactory<Pro
     }
 
     [Fact]
-    public async Task CreateGame_WithHardDifficulty_Returns400ValidationProblem()
+    public async Task CreateGame_WithHardDifficulty_Returns201AndUsesHardOpponentStrategy()
     {
         var response = await PostCreateGameAsync(Difficulty.Hard);
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        var problem = await response.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(problem.TryGetProperty("errors", out _));
-    }
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var body = await response.Content.ReadFromJsonAsync<CreateGameResponse>(JsonOptions);
+        Assert.NotNull(body);
 
-    [Fact]
-    public async Task CreateGame_WithHardDifficulty_IsRejectedWithBadRequestBeforeReachingGameService()
-    {
-        // FluentValidation (AD-5) rejects Hard before the request ever reaches GameService.CreateGame; no game
-        // id is returned, so there is nothing for IGameStore to have registered.
-        var response = await PostCreateGameAsync(Difficulty.Hard);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var store = _factory.Services.GetRequiredService<IGameStore>();
+        var game = store.WithGame(body!.GameId, value => value);
+        Assert.NotNull(game);
+        Assert.Equal(Difficulty.Hard, game!.Difficulty);
+        Assert.IsType<HardOpponentStrategy>(game.OpponentStrategy);
     }
 
     [Fact]
@@ -84,6 +81,7 @@ public sealed class GameEndpointsTests : IClassFixture<WebApplicationFactory<Pro
         Assert.NotNull(state);
         Assert.Equal(gameId, state!.GameId);
         Assert.Equal(GameOutcome.InProgress, state.Status);
+        Assert.Equal(Difficulty.Easy, state.Difficulty);
         Assert.Equal(5, state.OwnGrid.Ships.Count);
         Assert.Empty(state.OpponentGrid.Shots);
     }

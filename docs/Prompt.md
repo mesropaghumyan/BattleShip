@@ -70,3 +70,22 @@ Ce document consigne les échanges décisifs réalisés avec l'assistant IA au c
 - **Décision** : Acceptée.
 - **Vérification** : Fichier créé dans `docs/prompt.md` avec toutes les rubriques du gabarit d'évaluation.
 - **Preuve** : `docs/prompt.md`.
+
+---
+
+## 4. Développement de la Story 2.2 : sélection de la difficulté
+
+- **Date** : 16 septembre 2026
+- **Outil / modèle** : GitHub Copilot
+- **Contexte** : La Story 2.1 étant validée sur `fra_epic_2`, la Story 2.2 devait rendre les stratégies facile et difficile sélectionnables à la création d'une partie, sans modifier la boucle de jeu.
+- **Prompt** :
+  > `Poursuit le travail de ce prompt. Maintenant que la story 2.1 a été validée et testée, sur la branche fra_epic_2, développe la story 2.2 (les tests associés également, comme lors de la réalisation de la story 2.1) et alimente docs/Prompt.md.`
+- **Réponse résumée** :
+  1. La difficulté est conservée dans `Game` et exposée dans `GameStateDto`.
+  2. `Game.ResolveStrategy` associe `Easy` à `EasyOpponentStrategy` et `Hard` à `HardOpponentStrategy`; `GameService` conserve cette stratégie avec la partie.
+  3. La validation accepte les deux valeurs connues et rejette toujours une valeur absente ou invalide.
+  4. `NewGame.razor` propose un sélecteur facile/difficile et transmet le choix via `GameHttpClient` à `POST /games`.
+  5. Les tests d'intégration vérifient qu'une création `Hard` renvoie 201 et enregistre bien `HardOpponentStrategy`; les anciens tests hérités de la Story 1.4 ont été adaptés à ce nouveau contrat.
+- **Décision** : Acceptée. La sélection repose sur la difficulté persistée au niveau de la partie et reste compatible avec l'architecture `IOpponentStrategy`.
+- **Vérification** : `dotnet test --no-restore` -> 96 tests réussis sur 96, 0 échec.
+- **Preuve** : `BattleShip.Models/Domain/Game.cs`, `BattleShip.API/Services/GameService.cs`, `BattleShip.App/Pages/NewGame.razor`, `BattleShip.App/Services/GameHttpClient.cs`, `BattleShip.Tests/Integration/GameEndpointsTests.cs` et `BattleShip.Tests/Unit/GameTests.cs`.

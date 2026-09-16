@@ -22,9 +22,11 @@ public sealed class GameHttpClient(HttpClient httpClient)
         Converters = { new JsonStringEnumConverter() }
     };
 
-    public async Task<Guid> CreateGameAsync(CancellationToken cancellationToken = default)
+    public async Task<Guid> CreateGameAsync(
+        Difficulty difficulty = Difficulty.Easy,
+        CancellationToken cancellationToken = default)
     {
-        var request = new CreateGameRequest { Difficulty = Difficulty.Easy };
+        var request = new CreateGameRequest { Difficulty = difficulty };
         var response = await httpClient.PostAsJsonAsync("games", request, JsonOptions, cancellationToken);
         response.EnsureSuccessStatusCode();
 

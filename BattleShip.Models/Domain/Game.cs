@@ -1,3 +1,5 @@
+using BattleShip.Models.Domain.Opponent;
+
 namespace BattleShip.Models.Domain;
 
 public sealed class Game
@@ -6,8 +8,14 @@ public sealed class Game
     public Grid ComputerGrid { get; }
     public GameStatus Status { get; private set; } = GameStatus.InProgress;
     public Side? Winner { get; private set; }
+    public Difficulty Difficulty { get; }
+    public IOpponentStrategy OpponentStrategy { get; }
 
-    public Game(Grid humanGrid, Grid computerGrid)
+    public Game(
+        Grid humanGrid,
+        Grid computerGrid,
+        Difficulty difficulty = Difficulty.Easy,
+        IOpponentStrategy? opponentStrategy = null)
     {
         ArgumentNullException.ThrowIfNull(humanGrid);
         ArgumentNullException.ThrowIfNull(computerGrid);
@@ -16,7 +24,16 @@ public sealed class Game
 
         HumanGrid = humanGrid;
         ComputerGrid = computerGrid;
+        Difficulty = difficulty;
+        OpponentStrategy = opponentStrategy ?? ResolveStrategy(difficulty);
     }
+
+    public static IOpponentStrategy ResolveStrategy(Difficulty difficulty) => difficulty switch
+    {
+        Difficulty.Easy => new EasyOpponentStrategy(),
+        Difficulty.Hard => new HardOpponentStrategy(),
+        _ => throw new ArgumentOutOfRangeException(nameof(difficulty), difficulty, $"Unknown difficulty '{difficulty}'.")
+    };
 
     public ShotOutcome ApplyShot(Side shooter, Coordinate target)
     {

@@ -35,9 +35,8 @@ builder.Services.ConfigureHttpJsonOptions(options =>
 
 builder.Services.AddSingleton<IGameStore, InMemoryGameStore>();
 builder.Services.AddSingleton<GameEngine>();
-// Only Difficulty.Easy exists this epic (CreateGameRequestValidator rejects Hard); the interface is used anyway
-// so adding Difficulty.Hard's HardOpponentStrategy later never requires touching GameService (AD-6).
-builder.Services.AddSingleton<IOpponentStrategy, EasyOpponentStrategy>();
+// Easy and Hard opponent strategies are selected based on the game's Difficulty (Story 2.2, AD-6).
+builder.Services.AddSingleton<Func<Difficulty, IOpponentStrategy>>(_ => Game.ResolveStrategy);
 builder.Services.AddSingleton<GameService>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreateGameRequestValidator>();
 

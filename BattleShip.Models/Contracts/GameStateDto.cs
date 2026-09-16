@@ -12,6 +12,7 @@ public sealed class GameStateDto
 {
     public required Guid GameId { get; init; }
     public required GameOutcome Status { get; init; }
+    public Difficulty Difficulty { get; init; } = Difficulty.Easy;
     public required GridViewDto OwnGrid { get; init; }
     public required GridViewDto OpponentGrid { get; init; }
 }
