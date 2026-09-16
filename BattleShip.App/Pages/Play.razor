@@ -147,11 +147,19 @@ else
         state = new GameStateDto
         {
             GameId = state.GameId,
-            Status = state.Status,
+            Status = ToGameOutcome(turn.Status),
             OwnGrid = new GridViewDto { Ships = state.OwnGrid.Ships, Shots = ownShots },
             OpponentGrid = new GridViewDto { Ships = state.OpponentGrid.Ships, Shots = opponentShots }
         };
     }
+
+    private static GameOutcome ToGameOutcome(Fb.GameOutcome outcome) => outcome switch
+    {
+        Fb.GameOutcome.InProgress => GameOutcome.InProgress,
+        Fb.GameOutcome.Won => GameOutcome.Won,
+        Fb.GameOutcome.Lost => GameOutcome.Lost,
+        _ => GameOutcome.InProgress
+    };
 
     private static ShotResultDto ToShotResultDto(Fb.ShotResult shot) => new()
     {
