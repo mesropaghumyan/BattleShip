@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-15-2026 10:50
-last_updated: 09-16-2026 00:00
+last_updated: 09-16-2026 13:56
 project: BattleShip
 project_key: NOKEY
 tracking_system: file-system
@@ -42,7 +42,7 @@ development_status:
   1-4-api-créer-une-partie-et-consulter-son-état: done
   1-5-api-jouer-un-coup-via-grpc: done
   1-6-interface-blazor-créer-une-partie-et-jouer: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   epic-2: in-progress
   2-1-adversaire-ordinateur-stratégie-difficile-chasse-cible: done
@@ -56,3 +56,55 @@ development_status:
   3-2-consolidation-des-livrables-ia-avant-remise: backlog
   3-3-readme-de-remise: backlog
   epic-3-retrospective: optional
+action_items:
+  - id: "epic-1-retro-item-1-extraire-un-résolveur-unique-gamestatus"
+    epic: 1
+    action: "Extraire un résolveur unique GameStatus/Winner -> GameOutcome, partagé
+      entre GameViewMapper (HTTP) et BattlefieldGrpcService (gRPC)"
+    owner: "dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-15.md"
+  - id: "epic-1-retro-item-2-ajouter-un-test-de-régression-sur-les-op"
+    epic: 1
+    action: "Ajouter un test de régression sur les options JSON de GameHttpClient
+      (camelCase + enums en string) — bug déjà survenu une fois"
+    owner: "dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-15.md"
+  - id: "epic-1-retro-item-3-documenter-ou-rendre-robuste-au-profil-d"
+    epic: 1
+    action: "Documenter ou rendre robuste au profil de lancement le couple App/API
+      (README ou ApiBaseAddress sensible au schéma) pour éviter un blocage de contenu
+      mixte"
+    owner: "dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-15.md"
+  - id: "epic-1-retro-item-4-ajouter-un-filet-catch-exception-génériq"
+    epic: 1
+    action: "Ajouter un filet catch (Exception) générique dans BattlefieldGrpcService.FireShot,
+      en miroir du filet HTTP AddProblemDetails"
+    owner: "dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-15.md"
+  - id: "epic-1-retro-item-5-relâcher-la-contrainte-where-tresult-cla"
+    epic: 1
+    action: "Relâcher la contrainte where TResult : class sur IGameStore.WithGame<TResult>
+      pour éviter les contournements de type valeur"
+    owner: "dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-15.md"
+  - id: "epic-1-retro-item-6-aligner-le-mapping-client-d-un-shotoutco"
+    epic: 1
+    action: "Aligner le mapping client d un ShotOutcome inconnu (Play.razor.ToShotResultDto)
+      sur le bucket visible déjà utilisé par BattleGrid.razor"
+    owner: "dev"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-15.md"
+  - id: "epic-1-retro-item-7-leçon-de-process-vérifier-la-section-cro"
+    epic: 1
+    action: "Leçon de process : vérifier la section Cross-Story Dependencies d un
+      epic-N-context.md contre le code réel une fois l epic suivant commencé, ne pas
+      la prendre pour acquise"
+    owner: "process"
+    status: open
+    ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-15.md"
