@@ -44,12 +44,12 @@ development_status:
   1-6-interface-blazor-créer-une-partie-et-jouer: done
   epic-1-retrospective: done
 
-  epic-2: in-progress
+  epic-2: done
   2-1-adversaire-ordinateur-stratégie-difficile-chasse-cible: done
   2-2-sélection-de-la-difficulté-avant-la-partie: done
   2-3-historique-des-coups-joués: done
   2-4-statistiques-de-fin-de-partie: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   epic-3: backlog
   3-1-mise-en-place-du-processus-de-traçabilité-ia: backlog
