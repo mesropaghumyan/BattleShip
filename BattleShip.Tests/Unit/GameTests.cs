@@ -40,6 +40,33 @@ public class GameTests
     }
 
     [Fact]
+    public void ApplyShot_AppendsHumanAndComputerShotsInChronologicalOrder()
+    {
+        var computerGrid = BuildGrid(new Ship("Torpilleur", 2, Orientation.Horizontal,
+            [new Coordinate(0, 0), new Coordinate(0, 1)]));
+        var game = new Game(new Grid(), computerGrid);
+
+        game.ApplyShot(Side.Human, new Coordinate(0, 0));
+        game.ApplyShot(Side.Computer, new Coordinate(1, 1));
+
+        var history = game.ShotHistory;
+        Assert.Collection(history,
+            shot =>
+            {
+                Assert.Equal(Side.Human, shot.Side);
+                Assert.Equal(new Coordinate(0, 0), shot.Coordinate);
+                Assert.Equal(ShotOutcome.Hit, shot.Outcome);
+            },
+            shot =>
+            {
+                Assert.Equal(Side.Computer, shot.Side);
+                Assert.Equal(new Coordinate(1, 1), shot.Coordinate);
+                Assert.Equal(ShotOutcome.Miss, shot.Outcome);
+            });
+        Assert.All(history, shot => Assert.NotEqual(default, shot.PlayedAt));
+    }
+
+    [Fact]
     public void ApplyShot_FinishesGameAndSetsWinner_WhenTargetFleetIsFullySunk()
     {
         var computerGrid = SingleShipGrid(new Coordinate(0, 0));
@@ -86,6 +113,7 @@ public class GameTests
         Assert.Equal(GameStatus.InProgress, game.Status);
         Assert.Null(game.Winner);
         Assert.Single(computerGrid.ShotsPlayed);
+        Assert.Single(game.ShotHistory);
     }
 
     [Fact]

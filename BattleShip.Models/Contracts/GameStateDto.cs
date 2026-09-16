@@ -15,6 +15,7 @@ public sealed class GameStateDto
     public Difficulty Difficulty { get; init; } = Difficulty.Easy;
     public required GridViewDto OwnGrid { get; init; }
     public required GridViewDto OpponentGrid { get; init; }
+    public required IReadOnlyList<ShotHistoryDto> ShotHistory { get; init; }
 }
 
 /// <summary>
@@ -49,3 +50,11 @@ public sealed class ShotResultDto
 }
 
 public readonly record struct CoordinateDto(int Row, int Col);
+
+public sealed class ShotHistoryDto
+{
+    public required Side Side { get; init; }
+    public required CoordinateDto Coordinate { get; init; }
+    public required ShotOutcome Outcome { get; init; }
+    public required DateTimeOffset PlayedAt { get; init; }
+}

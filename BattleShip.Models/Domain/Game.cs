@@ -4,8 +4,11 @@ namespace BattleShip.Models.Domain;
 
 public sealed class Game
 {
+    private readonly List<Shot> _shotHistory = [];
+
     public Grid HumanGrid { get; }
     public Grid ComputerGrid { get; }
+    public IReadOnlyList<Shot> ShotHistory => _shotHistory;
     public GameStatus Status { get; private set; } = GameStatus.InProgress;
     public Side? Winner { get; private set; }
     public Difficulty Difficulty { get; }
@@ -47,6 +50,7 @@ public sealed class Game
             _ => throw new ArgumentOutOfRangeException(nameof(shooter), shooter, "Unknown shooter side.")
         };
         var outcome = targetGrid.ResolveShot(target);
+        _shotHistory.Add(new Shot(shooter, target, outcome, DateTimeOffset.UtcNow));
 
         if (targetGrid.IsFleetSunk)
         {

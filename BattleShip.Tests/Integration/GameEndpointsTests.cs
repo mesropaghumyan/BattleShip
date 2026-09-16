@@ -84,6 +84,7 @@ public sealed class GameEndpointsTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Equal(Difficulty.Easy, state.Difficulty);
         Assert.Equal(5, state.OwnGrid.Ships.Count);
         Assert.Empty(state.OpponentGrid.Shots);
+        Assert.Empty(state.ShotHistory);
     }
 
     [Fact]
@@ -172,6 +173,34 @@ public sealed class GameEndpointsTests : IClassFixture<WebApplicationFactory<Pro
             shot.Coordinate.Row == partiallyHitShipCells[0].Row &&
             shot.Coordinate.Col == partiallyHitShipCells[0].Col &&
             shot.Outcome == ShotOutcome.Hit);
+    }
+
+    [Fact]
+    public async Task GetGameState_ExposesChronologicalShotHistoryWithBothSides()
+    {
+        var gameId = await CreateGameAsync();
+        var store = _factory.Services.GetRequiredService<IGameStore>();
+
+        store.WithGame(gameId, game =>
+        {
+            game.ApplyShot(Side.Human, new Coordinate(0, 0));
+            game.ApplyShot(Side.Computer, new Coordinate(1, 1));
+            return game;
+        });
+
+        var state = await GetGameStateAsync(gameId);
+
+        Assert.Collection(state.ShotHistory,
+            shot =>
+            {
+                Assert.Equal(Side.Human, shot.Side);
+                Assert.Equal(new CoordinateDto(0, 0), shot.Coordinate);
+            },
+            shot =>
+            {
+                Assert.Equal(Side.Computer, shot.Side);
+                Assert.Equal(new CoordinateDto(1, 1), shot.Coordinate);
+            });
     }
 
     [Fact]
