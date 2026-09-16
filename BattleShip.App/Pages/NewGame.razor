@@ -6,7 +6,11 @@
 
 <h1>Bataille navale</h1>
 
-<p>Affrontez l'ordinateur (niveau facile) sur une grille 10x10.</p>
+<label for="difficulty">Difficulté</label>
+<select id="difficulty" class="form-select mb-3" @bind="selectedDifficulty">
+    <option value="@Difficulty.Easy">Facile</option>
+    <option value="@Difficulty.Hard">Difficile</option>
+</select>
 
 <button class="btn btn-primary" disabled="@isCreating" @onclick="StartGameAsync">
     @(isCreating ? "Création..." : "Nouvelle partie")
@@ -22,6 +26,7 @@
 @code {
     private bool isCreating;
     private string? errorMessage;
+    private Difficulty selectedDifficulty = Difficulty.Easy;
 
     private async Task StartGameAsync()
     {
@@ -33,7 +38,7 @@
 
         try
         {
-            var gameId = await GameClient.CreateGameAsync();
+            var gameId = await GameClient.CreateGameAsync(selectedDifficulty);
             Navigation.NavigateTo($"/play/{gameId}");
         }
         catch (Exception ex)

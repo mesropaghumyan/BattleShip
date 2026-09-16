@@ -1,4 +1,5 @@
 using BattleShip.Models.Domain;
+using BattleShip.Models.Domain.Opponent;
 
 namespace BattleShip.Tests.Unit;
 
@@ -124,5 +125,23 @@ public class GameTests
         var sharedGrid = new Grid();
 
         Assert.Throws<ArgumentException>(() => new Game(sharedGrid, sharedGrid));
+    }
+
+    [Theory]
+    [InlineData(Difficulty.Easy, typeof(EasyOpponentStrategy))]
+    [InlineData(Difficulty.Hard, typeof(HardOpponentStrategy))]
+    public void ResolveStrategy_SelectsStrategyForDifficulty(Difficulty difficulty, Type expectedType)
+    {
+        var game = new Game(new Grid(), new Grid(), difficulty);
+
+        Assert.Equal(difficulty, game.Difficulty);
+        Assert.IsType(expectedType, game.OpponentStrategy);
+    }
+
+    [Fact]
+    public void Constructor_Throws_ForUnknownDifficulty()
+    {
+        Assert.Throws<ArgumentOutOfRangeException>(() =>
+            new Game(new Grid(), new Grid(), (Difficulty)99));
     }
 }

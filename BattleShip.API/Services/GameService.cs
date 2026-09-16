@@ -10,19 +10,27 @@ namespace BattleShip.API.Services;
 /// Orchestrates game creation, state reads and shot resolution. The only component allowed to call
 /// <see cref="IGameStore"/> (AD-3).
 /// </summary>
-public sealed class GameService(IGameStore gameStore, GameEngine gameEngine, IOpponentStrategy opponentStrategy)
+public sealed class GameService(
+    IGameStore gameStore,
+    GameEngine gameEngine,
+    Func<Difficulty, IOpponentStrategy>? strategyFactory = null)
 {
+    public GameService(IGameStore gameStore, GameEngine gameEngine, IOpponentStrategy opponentStrategy)
+        : this(gameStore, gameEngine, _ => opponentStrategy)
+    {
+    }
+
     /// <summary>
-    /// Creates a new game with two randomly-populated fleets and registers it in the store.
-    /// <paramref name="difficulty"/> is expected to already have been validated by FluentValidation (AD-5);
-    /// this epic only ever creates the human vs. Easy-computer matchup regardless of the value passed in, since
-    /// <c>Hard</c> is rejected upstream.
+    /// Creates a new game with two randomly-populated fleets and registers it in the store
+    /// with the appropriate opponent strategy according to <paramref name="difficulty"/>.
+    /// <paramref name="difficulty"/> is expected to already have been validated by FluentValidation (AD-5).
     /// </summary>
     /// <returns>The id of the newly created game.</returns>
     public Guid CreateGame(Difficulty difficulty)
     {
         var (playerGrid, computerGrid) = gameEngine.CreateGrids();
-        var game = new Game(playerGrid, computerGrid);
+        var strategy = strategyFactory?.Invoke(difficulty);
+        var game = new Game(playerGrid, computerGrid, difficulty, strategy);
 
         var gameId = Guid.NewGuid();
         gameStore.Add(gameId, game);
@@ -37,7 +45,7 @@ public sealed class GameService(IGameStore gameStore, GameEngine gameEngine, IOp
     /// <summary>
     /// Plays a single turn for <paramref name="gameId"/>: applies the player's shot at <paramref name="coordinate"/>
     /// then, if the game is not over as a result, resolves the computer's immediate riposte
-    /// (<see cref="EasyOpponentStrategy"/>) in the same atomic <see cref="IGameStore.WithGame{TResult}"/> access
+    /// (using the game's configured <see cref="IOpponentStrategy"/>) in the same atomic <see cref="IGameStore.WithGame{TResult}"/> access
     /// (AD-3, AD-4). <paramref name="coordinate"/> is expected to already have been validated by FluentValidation
     /// (AD-5); the domain's own guards still apply (already-played cell, already-finished game).
     /// </summary>
@@ -54,7 +62,7 @@ public sealed class GameService(IGameStore gameStore, GameEngine gameEngine, IOp
             ShotAttempt? computerShot = null;
             if (game.Status == GameStatus.InProgress)
             {
-                var computerCoordinate = opponentStrategy.ChooseShot(game.HumanGrid);
+                var computerCoordinate = game.OpponentStrategy.ChooseShot(game.HumanGrid);
                 var computerOutcome = game.ApplyShot(Side.Computer, computerCoordinate);
                 computerShot = new ShotAttempt(computerCoordinate, computerOutcome);
             }
