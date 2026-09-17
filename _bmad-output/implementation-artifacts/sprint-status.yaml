@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-15-2026 10:50
-last_updated: 09-17-2026 00:00
+last_updated: 09-17-2026 00:30
 project: BattleShip
 project_key: NOKEY
 tracking_system: file-system
@@ -53,7 +53,7 @@ development_status:
 
   epic-3: in-progress
   3-1-mise-en-place-du-processus-de-traçabilité-ia: review
-  3-2-consolidation-des-livrables-ia-avant-remise: backlog
+  3-2-consolidation-des-livrables-ia-avant-remise: review
   3-3-readme-de-remise: backlog
   epic-3-retrospective: optional
 action_items:

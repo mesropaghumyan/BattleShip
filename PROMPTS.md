@@ -322,3 +322,18 @@ Pour ajouter une entrée : dupliquez le bloc « Gabarit » ci-dessous, insérez 
 - **Décision** : Acceptée après correction de la collision de fichiers.
 - **Vérification** : Gabarits comparés mot pour mot aux diapositives 56-58 du support de cours ; `git status`/`git diff` relus pour confirmer qu'aucune entrée existante n'a été perdue dans la fusion.
 - **Preuve** : commit de la Story 3.1 sur la branche `feature/epic-3`.
+
+---
+
+## 19. Story 3.2 — Consolidation des livrables IA avant remise
+
+- **Date** : 17 septembre 2026
+- **Outil / modèle** : Claude Code / Sonnet 5
+- **Contexte** : `docs/adr/` et `REVUE-IA.md` n'avaient que leurs gabarits (Story 3.1), sans ADR réel ni revue argumentée, alors que la matière première existait déjà : 11 décisions d'architecture actées dans `ARCHITECTURE-SPINE.md` (AD-1 à AD-11) et des findings réels avec preuve dans les rétrospectives des Epics 1 et 2 et `deferred-work.md`.
+- **Prompt** :
+  > `lance la story 3.2` (exécution du spec `_bmad-output/implementation-artifacts/spec-3-2-consolidation-des-livrables-ia-avant-remise.md`, mapping ADR et 5 revues candidates déjà fixés par le spec en Design Notes).
+- **Réponse résumée** :
+  Rédaction d'un ADR par AD du spine (`docs/adr/ADR-0001-...md` à `ADR-0011-...md`, statut « Accepté »), chacun avec Contexte = le « Prevents » du spine, Options envisagées = l'alternative écartée implicitement, Décision = le « Rule », Conséquences = effets réels observés dans les epics suivants (y compris les limites et risques déjà connus), Références vers `ARCHITECTURE-SPINE.md#AD-N`. Ajout des 5 revues listées par le spec dans `REVUE-IA.md`, sous le bloc gabarit conservé intact, chacune reformulée au format hypothèse → expérience → observation → décision → preuve à partir des rétrospectives Epic 1/2 et de `deferred-work.md` (pas de copie brute). Audit de `PROMPTS.md` : les 18 entrées existantes couvrent déjà les échanges décisifs des Epics 1 et 2 et de la Story 3.1 ; seule décision structurante propre à cette story (numérotation directe AD-N → ADR-N à 4 chiffres, choix de documenter l'exécution elle-même) justifiant cette entrée 19, à l'image des entrées 3/11/18 pour les sessions de planification/rétrospective/traçabilité précédentes. Revue à 3 lenses (Blind Hunter, Edge Case Hunter, Verification Gap) sur le diff complet : 5 corrections appliquées (3 des 5 revues de `REVUE-IA.md` n'avaient pas de commit/test reproductible direct, contrairement à l'AC ; `sprint-status.yaml` désynchronisé du statut de la spec ; une phrase de vérification surclaimait 2 commits non cités dans le nouveau contenu ; 2 formulations imprécises).
+- **Décision** : Acceptée. Aucune décision n'a été inventée : chaque ADR et chaque revue renvoie à une preuve déjà existante (AD du spine, commit, ou constat de rétrospective).
+- **Vérification** : Chaque ADR comparé au AD correspondant du spine (aucune décision non couverte, aucune inventée). Chaque revue de `REVUE-IA.md` reliée à un commit ou un test réel existant, vérifié via `git log` (`13e84d9`, `f4d4e4b`, `ebb2e3b`, `fc9e8dc`) et via les fichiers de test réels cités. `git status`/`git diff` relus avant commit pour confirmer qu'aucun contenu existant (gabarit `REVUE-IA.md`, 18 entrées de `PROMPTS.md`) n'a été perdu.
+- **Preuve** : `docs/adr/ADR-0001-...md` à `ADR-0011-...md`, `REVUE-IA.md` (5 revues ajoutées après le gabarit), cette entrée elle-même.
