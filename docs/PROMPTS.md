@@ -1,6 +1,21 @@
-# Journal des échanges IA (PROMPTS)
+# PROMPTS.md
 
-Ce document consigne les échanges décisifs réalisés avec l'assistant IA au cours du développement du projet **BattleShip**, conformément au gabarit d'évaluation (Diapo 56 du cours).
+Journal des échanges IA décisifs du projet BattleShip. Une entrée par prompt qui a compté pour une décision réelle — pas une transcription intégrale des échanges.
+
+Pour ajouter une entrée : dupliquez le bloc « Gabarit » ci-dessous, insérez la copie **après** ce bloc (le gabarit reste en tête, inchangé, comme référence), numérotez l'entrée à la suite de la dernière, et remplissez-la avec l'échange réel, la décision prise et une preuve reproductible (lien vers un commit ou un test).
+
+---
+
+## Gabarit (à dupliquer pour chaque nouvelle entrée — ne pas supprimer ce bloc)
+
+## Date et sujet de l'échange
+**Outil / modèle** : celui réellement utilisé, si connu.
+**Contexte** : besoin, contraintes et code concerné.
+**Prompt** : votre demande effective.
+**Réponse résumée** : proposition et hypothèses de l'IA.
+**Décision** : acceptée, adaptée ou rejetée. Expliquez pourquoi cette décision répond à votre besoin.
+**Vérification** : scénario ou commande, résultat attendu, résultat observé et portée du contrôle.
+**Preuve** : lien vers le commit et les éléments reproductibles.
 
 ---
 
@@ -231,10 +246,10 @@ Ce document consigne les échanges décisifs réalisés avec l'assistant IA au c
 - **Prompt** :
   > `Dans docs/ créee prompt.md qui listera nos echanges`
 - **Réponse résumée** :
-  Création de ce document `docs/prompt.md` structuré selon les rubriques requises par le cours (Date/sujet, Outil/modèle, Contexte, Prompt, Réponse résumée, Décision, Vérification, Preuve) pour consigner les échanges décisifs.
+  Création de ce document, alors situé dans `docs/Prompt.md`, structuré selon les rubriques requises par le cours (Date/sujet, Outil/modèle, Contexte, Prompt, Réponse résumée, Décision, Vérification, Preuve) pour consigner les échanges décisifs.
 - **Décision** : Acceptée.
-- **Vérification** : Fichier créé dans `docs/prompt.md` avec toutes les rubriques du gabarit d'évaluation.
-- **Preuve** : `docs/prompt.md`.
+- **Vérification** : Fichier créé dans `docs/Prompt.md` avec toutes les rubriques du gabarit d'évaluation.
+- **Preuve** : `docs/Prompt.md` (déplacé vers `PROMPTS.md` à la racine du dépôt en Story 3.1, pour correspondre au nom et à l'emplacement exacts du gabarit officiel du cours — voir entrée 18).
 
 ---
 
@@ -292,3 +307,48 @@ Ce document consigne les échanges décisifs réalisés avec l'assistant IA au c
 - **Décision** : Acceptée. Le calcul est séparé de l'agrégat et testable avec des dates/historiques déterministes; les statistiques finales ne sont publiées qu'une fois le vainqueur connu.
 - **Vérification** : Tests unitaires ciblés (16 réussis), tests HTTP ciblés (13 réussis), compilation complète (`dotnet build BattleShip.slnx --no-restore`) réussie, puis suite complète (`dotnet test BattleShip.slnx --no-restore`) : 101 tests réussis sur 101, 0 échec.
 - **Preuve** : `BattleShip.Models/Domain/GameStatistics.cs`, `BattleShip.Models/Domain/Game.cs`, `BattleShip.Models/Contracts/GameStateDto.cs`, `BattleShip.API/Mapping/GameViewMapper.cs`, `BattleShip.App/Pages/Play.razor`, `BattleShip.Tests/Unit/GameTests.cs` et `BattleShip.Tests/Integration/GameEndpointsTests.cs`.
+
+---
+
+## 18. Story 3.1 — Mise en place du processus de traçabilité IA
+
+- **Date** : 17 septembre 2026
+- **Outil / modèle** : Claude Code / Sonnet 5
+- **Contexte** : Premier passage sur l'Epic 3 (traçabilité IA + préparation de la remise). Un journal de prompts existait déjà de facto (`docs/Prompt.md`, 17 entrées couvrant les Epics 1 et 2), créé au fil de l'eau pendant ces epics avant même que la Story 3.1 ne soit formellement traitée.
+- **Prompt** :
+  > `lance la story 3.1`
+- **Réponse résumée** :
+  Revue « Blind Hunter » du premier jet (gabarits vides créés à la racine) a signalé une collision : le gabarit officiel attend `PROMPTS.md` à la racine, mais le contenu réel des Epics 1-2 vivait dans `docs/Prompt.md`. Consolidation : les 17 entrées existantes ont été déplacées vers `PROMPTS.md` (racine), précédées du gabarit officiel comme référence ; `docs/Prompt.md` a été supprimé. Création de `REVUE-IA.md` (racine) et `docs/adr/_TEMPLATE.md`, tous deux vides à ce stade — le contenu réel des revues et des ADR relève de la Story 3.2 (consolidation), pas de cette story (mise en place du processus).
+- **Décision** : Acceptée après correction de la collision de fichiers.
+- **Vérification** : Gabarits comparés mot pour mot aux diapositives 56-58 du support de cours ; `git status`/`git diff` relus pour confirmer qu'aucune entrée existante n'a été perdue dans la fusion.
+- **Preuve** : commit de la Story 3.1 sur la branche `feature/epic-3`.
+
+---
+
+## 19. Story 3.2 — Consolidation des livrables IA avant remise
+
+- **Date** : 17 septembre 2026
+- **Outil / modèle** : Claude Code / Sonnet 5
+- **Contexte** : `docs/adr/` et `REVUE-IA.md` n'avaient que leurs gabarits (Story 3.1), sans ADR réel ni revue argumentée, alors que la matière première existait déjà : 11 décisions d'architecture actées dans `ARCHITECTURE-SPINE.md` (AD-1 à AD-11) et des findings réels avec preuve dans les rétrospectives des Epics 1 et 2 et `deferred-work.md`.
+- **Prompt** :
+  > `lance la story 3.2` (exécution du spec `_bmad-output/implementation-artifacts/spec-3-2-consolidation-des-livrables-ia-avant-remise.md`, mapping ADR et 5 revues candidates déjà fixés par le spec en Design Notes).
+- **Réponse résumée** :
+  Rédaction d'un ADR par AD du spine (`docs/adr/ADR-0001-...md` à `ADR-0011-...md`, statut « Accepté »), chacun avec Contexte = le « Prevents » du spine, Options envisagées = l'alternative écartée implicitement, Décision = le « Rule », Conséquences = effets réels observés dans les epics suivants (y compris les limites et risques déjà connus), Références vers `ARCHITECTURE-SPINE.md#AD-N`. Ajout des 5 revues listées par le spec dans `REVUE-IA.md`, sous le bloc gabarit conservé intact, chacune reformulée au format hypothèse → expérience → observation → décision → preuve à partir des rétrospectives Epic 1/2 et de `deferred-work.md` (pas de copie brute). Audit de `PROMPTS.md` : les 18 entrées existantes couvrent déjà les échanges décisifs des Epics 1 et 2 et de la Story 3.1 ; seule décision structurante propre à cette story (numérotation directe AD-N → ADR-N à 4 chiffres, choix de documenter l'exécution elle-même) justifiant cette entrée 19, à l'image des entrées 3/11/18 pour les sessions de planification/rétrospective/traçabilité précédentes. Revue à 3 lenses (Blind Hunter, Edge Case Hunter, Verification Gap) sur le diff complet : 5 corrections appliquées (3 des 5 revues de `REVUE-IA.md` n'avaient pas de commit/test reproductible direct, contrairement à l'AC ; `sprint-status.yaml` désynchronisé du statut de la spec ; une phrase de vérification surclaimait 2 commits non cités dans le nouveau contenu ; 2 formulations imprécises).
+- **Décision** : Acceptée. Aucune décision n'a été inventée : chaque ADR et chaque revue renvoie à une preuve déjà existante (AD du spine, commit, ou constat de rétrospective).
+- **Vérification** : Chaque ADR comparé au AD correspondant du spine (aucune décision non couverte, aucune inventée). Chaque revue de `REVUE-IA.md` reliée à un commit ou un test réel existant, vérifié via `git log` (`13e84d9`, `f4d4e4b`, `ebb2e3b`, `fc9e8dc`) et via les fichiers de test réels cités. `git status`/`git diff` relus avant commit pour confirmer qu'aucun contenu existant (gabarit `REVUE-IA.md`, 18 entrées de `PROMPTS.md`) n'a été perdu.
+- **Preuve** : `docs/adr/ADR-0001-...md` à `ADR-0011-...md`, `REVUE-IA.md` (5 revues ajoutées après le gabarit), cette entrée elle-même.
+
+---
+
+## 20. Story 3.3 — Relocalisation de PROMPTS.md et REVUE-IA.md vers docs/
+
+- **Date** : 17 septembre 2026
+- **Outil / modèle** : Claude Code / Sonnet 5
+- **Contexte** : Pendant la rédaction du `README.md` de remise (Story 3.3), l'utilisateur a demandé de déplacer `PROMPTS.md` et `REVUE-IA.md` de la racine du dépôt vers `docs/` — préférence explicite de l'équipe, différente de l'emplacement suggéré par les diapositives 56/58 du support de cours (« à la racine du dépôt »), mais aucune exigence technique du socle n'impose cet emplacement précis.
+- **Prompt** :
+  > `tu mettras PROMPTS.md et REVUE-IA.md dans docs/`
+- **Réponse résumée** :
+  `git mv PROMPTS.md docs/PROMPTS.md` et `git mv REVUE-IA.md docs/REVUE-IA.md`. Mise à jour des liens dans `README.md` (section Traçabilité IA et Structure du dépôt). Les mentions de ces deux fichiers dans `docs/adr/ADR-0003/0006/0008/0010` restent valides (mentions sans chemin, pas de lien relatif à corriger). Aucune modification des entrées historiques déjà écrites dans ces deux fichiers, ni des specs déjà `done` des Stories 3.1/3.2, ni des documents de planification figés (`SPEC.md`, `epics.md`, `ARCHITECTURE-SPINE.md`) qui mentionnent encore l'emplacement racine — ce sont des enregistrements historiques de ce qui était vrai au moment où ils ont été écrits, pas des pointeurs à maintenir à jour.
+- **Décision** : Acceptée. Changement cosmétique de rangement, sans impact sur le contenu ni les preuves déjà consignées.
+- **Vérification** : `grep` sur l'ensemble du dépôt pour lister toutes les références aux deux anciens chemins ; seuls `README.md` et les ADR contenaient des liens/mentions actifs à vérifier, les ADR n'en avaient en réalité pas besoin (mentions sans chemin).
+- **Preuve** : `git mv` (renommage détecté par Git), diff de `README.md`, cette entrée.
