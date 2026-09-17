@@ -34,3 +34,9 @@
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-6-interface-blazor-créer-une-partie-et-jouer.md`
   summary: Fenêtre de course théorique si un second clic passe avant que le paramètre Interactive de BattleGrid ne se mette à jour après un premier tir.
   evidence: Signalé par Edge Case Hunter (maybe-false). Dépend du scheduling interne du renderer Blazor WASM ; nécessiterait un test de stress navigateur réel pour trancher.
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-1-mise-en-place-du-processus-de-traçabilité-ia.md`
+  summary: CLAUDE.md (mode Caveman, réponses télégraphiques, focus code C# uniquement) entre en tension avec l'exigence de l'Epic 3 de produire de la prose française argumentée (PROMPTS.md, ADR, REVUE-IA.md, README.md).
+  evidence: Signalé par Blind Hunter (review Story 3.1). Réel : un assistant suivant CLAUDE.md à la lettre résisterait à produire les livrables mêmes que cet epic construit. Correction hors périmètre de cette story (édition de CLAUDE.md exclue des routes patch/HALT) ; à trancher avec l'utilisateur avant ou pendant la Story 3.2/3.3.
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-1-mise-en-place-du-processus-de-traçabilité-ia.md`
+  summary: skills-lock.json pin les skills caveman-* par hash de contenu et nom de dépôt GitHub nu (sans tag/SHA), sans instructions d'installation/rafraîchissement documentées nulle part dans le dépôt.
+  evidence: Signalé par Blind Hunter (review Story 3.1). Un tiers clonant le dépôt n'a aucun moyen documenté d'obtenir ces skills, ce qui contredit l'exigence de la Story 3.3 (« un tiers sans connaissance préalable » doit pouvoir travailler à partir du seul dépôt). À traiter dans le README de remise (Story 3.3) ou à retirer si non essentiel.

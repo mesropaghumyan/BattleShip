@@ -1,6 +1,21 @@
-# Journal des échanges IA (PROMPTS)
+# PROMPTS.md
 
-Ce document consigne les échanges décisifs réalisés avec l'assistant IA au cours du développement du projet **BattleShip**, conformément au gabarit d'évaluation (Diapo 56 du cours).
+Journal des échanges IA décisifs du projet BattleShip. Une entrée par prompt qui a compté pour une décision réelle — pas une transcription intégrale des échanges.
+
+Pour ajouter une entrée : dupliquez le bloc « Gabarit » ci-dessous, insérez la copie **après** ce bloc (le gabarit reste en tête, inchangé, comme référence), numérotez l'entrée à la suite de la dernière, et remplissez-la avec l'échange réel, la décision prise et une preuve reproductible (lien vers un commit ou un test).
+
+---
+
+## Gabarit (à dupliquer pour chaque nouvelle entrée — ne pas supprimer ce bloc)
+
+## Date et sujet de l'échange
+**Outil / modèle** : celui réellement utilisé, si connu.
+**Contexte** : besoin, contraintes et code concerné.
+**Prompt** : votre demande effective.
+**Réponse résumée** : proposition et hypothèses de l'IA.
+**Décision** : acceptée, adaptée ou rejetée. Expliquez pourquoi cette décision répond à votre besoin.
+**Vérification** : scénario ou commande, résultat attendu, résultat observé et portée du contrôle.
+**Preuve** : lien vers le commit et les éléments reproductibles.
 
 ---
 
@@ -231,10 +246,10 @@ Ce document consigne les échanges décisifs réalisés avec l'assistant IA au c
 - **Prompt** :
   > `Dans docs/ créee prompt.md qui listera nos echanges`
 - **Réponse résumée** :
-  Création de ce document `docs/prompt.md` structuré selon les rubriques requises par le cours (Date/sujet, Outil/modèle, Contexte, Prompt, Réponse résumée, Décision, Vérification, Preuve) pour consigner les échanges décisifs.
+  Création de ce document, alors situé dans `docs/Prompt.md`, structuré selon les rubriques requises par le cours (Date/sujet, Outil/modèle, Contexte, Prompt, Réponse résumée, Décision, Vérification, Preuve) pour consigner les échanges décisifs.
 - **Décision** : Acceptée.
-- **Vérification** : Fichier créé dans `docs/prompt.md` avec toutes les rubriques du gabarit d'évaluation.
-- **Preuve** : `docs/prompt.md`.
+- **Vérification** : Fichier créé dans `docs/Prompt.md` avec toutes les rubriques du gabarit d'évaluation.
+- **Preuve** : `docs/Prompt.md` (déplacé vers `PROMPTS.md` à la racine du dépôt en Story 3.1, pour correspondre au nom et à l'emplacement exacts du gabarit officiel du cours — voir entrée 18).
 
 ---
 
@@ -292,3 +307,18 @@ Ce document consigne les échanges décisifs réalisés avec l'assistant IA au c
 - **Décision** : Acceptée. Le calcul est séparé de l'agrégat et testable avec des dates/historiques déterministes; les statistiques finales ne sont publiées qu'une fois le vainqueur connu.
 - **Vérification** : Tests unitaires ciblés (16 réussis), tests HTTP ciblés (13 réussis), compilation complète (`dotnet build BattleShip.slnx --no-restore`) réussie, puis suite complète (`dotnet test BattleShip.slnx --no-restore`) : 101 tests réussis sur 101, 0 échec.
 - **Preuve** : `BattleShip.Models/Domain/GameStatistics.cs`, `BattleShip.Models/Domain/Game.cs`, `BattleShip.Models/Contracts/GameStateDto.cs`, `BattleShip.API/Mapping/GameViewMapper.cs`, `BattleShip.App/Pages/Play.razor`, `BattleShip.Tests/Unit/GameTests.cs` et `BattleShip.Tests/Integration/GameEndpointsTests.cs`.
+
+---
+
+## 18. Story 3.1 — Mise en place du processus de traçabilité IA
+
+- **Date** : 17 septembre 2026
+- **Outil / modèle** : Claude Code / Sonnet 5
+- **Contexte** : Premier passage sur l'Epic 3 (traçabilité IA + préparation de la remise). Un journal de prompts existait déjà de facto (`docs/Prompt.md`, 17 entrées couvrant les Epics 1 et 2), créé au fil de l'eau pendant ces epics avant même que la Story 3.1 ne soit formellement traitée.
+- **Prompt** :
+  > `lance la story 3.1`
+- **Réponse résumée** :
+  Revue « Blind Hunter » du premier jet (gabarits vides créés à la racine) a signalé une collision : le gabarit officiel attend `PROMPTS.md` à la racine, mais le contenu réel des Epics 1-2 vivait dans `docs/Prompt.md`. Consolidation : les 17 entrées existantes ont été déplacées vers `PROMPTS.md` (racine), précédées du gabarit officiel comme référence ; `docs/Prompt.md` a été supprimé. Création de `REVUE-IA.md` (racine) et `docs/adr/_TEMPLATE.md`, tous deux vides à ce stade — le contenu réel des revues et des ADR relève de la Story 3.2 (consolidation), pas de cette story (mise en place du processus).
+- **Décision** : Acceptée après correction de la collision de fichiers.
+- **Vérification** : Gabarits comparés mot pour mot aux diapositives 56-58 du support de cours ; `git status`/`git diff` relus pour confirmer qu'aucune entrée existante n'a été perdue dans la fusion.
+- **Preuve** : commit de la Story 3.1 sur la branche `feature/epic-3`.
