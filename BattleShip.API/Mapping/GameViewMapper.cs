@@ -21,9 +21,34 @@ public static class GameViewMapper
             Status = ToOutcome(game),
             Difficulty = game.Difficulty,
             OwnGrid = ToOwnGridView(game.HumanGrid),
-            OpponentGrid = ToOpponentGridView(game.ComputerGrid)
+            OpponentGrid = ToOpponentGridView(game.ComputerGrid),
+            ShotHistory = game.ShotHistory.Select(ToShotHistoryView).ToList(),
+            Statistics = ToStatisticsView(game.GetStatistics())
         };
     }
+
+    private static GameStatisticsDto? ToStatisticsView(GameStatistics? statistics) => statistics is null ? null : new()
+    {
+        Human = ToSideStatisticsView(statistics.Human),
+        Computer = ToSideStatisticsView(statistics.Computer),
+        Duration = statistics.Duration
+    };
+
+    private static SideStatisticsDto ToSideStatisticsView(SideStatistics statistics) => new()
+    {
+        ShotCount = statistics.ShotCount,
+        HitCount = statistics.HitCount,
+        HitRate = statistics.HitRate,
+        Duration = statistics.Duration
+    };
+
+    private static ShotHistoryDto ToShotHistoryView(Shot shot) => new()
+    {
+        Side = shot.Side,
+        Coordinate = new CoordinateDto(shot.Coordinate.Row, shot.Coordinate.Col),
+        Outcome = shot.Outcome,
+        PlayedAt = shot.PlayedAt
+    };
 
     private static GameOutcome ToOutcome(Game game)
     {

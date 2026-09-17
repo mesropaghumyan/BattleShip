@@ -84,6 +84,8 @@ public sealed class GameEndpointsTests : IClassFixture<WebApplicationFactory<Pro
         Assert.Equal(Difficulty.Easy, state.Difficulty);
         Assert.Equal(5, state.OwnGrid.Ships.Count);
         Assert.Empty(state.OpponentGrid.Shots);
+        Assert.Empty(state.ShotHistory);
+        Assert.Null(state.Statistics);
     }
 
     [Fact]
@@ -172,6 +174,57 @@ public sealed class GameEndpointsTests : IClassFixture<WebApplicationFactory<Pro
             shot.Coordinate.Row == partiallyHitShipCells[0].Row &&
             shot.Coordinate.Col == partiallyHitShipCells[0].Col &&
             shot.Outcome == ShotOutcome.Hit);
+    }
+
+    [Fact]
+    public async Task GetGameState_ExposesChronologicalShotHistoryWithBothSides()
+    {
+        var gameId = await CreateGameAsync();
+        var store = _factory.Services.GetRequiredService<IGameStore>();
+
+        store.WithGame(gameId, game =>
+        {
+            game.ApplyShot(Side.Human, new Coordinate(0, 0));
+            game.ApplyShot(Side.Computer, new Coordinate(1, 1));
+            return game;
+        });
+
+        var state = await GetGameStateAsync(gameId);
+
+        Assert.Collection(state.ShotHistory,
+            shot =>
+            {
+                Assert.Equal(Side.Human, shot.Side);
+                Assert.Equal(new CoordinateDto(0, 0), shot.Coordinate);
+            },
+            shot =>
+            {
+                Assert.Equal(Side.Computer, shot.Side);
+                Assert.Equal(new CoordinateDto(1, 1), shot.Coordinate);
+            });
+    }
+
+    [Fact]
+    public async Task GetGameState_ExposesStatisticsWhenGameIsFinished()
+    {
+        var gameId = await CreateGameAsync();
+        var store = _factory.Services.GetRequiredService<IGameStore>();
+
+        store.WithGame(gameId, game =>
+        {
+            foreach (var cell in game.ComputerGrid.Ships.SelectMany(ship => ship.Cells))
+                game.ApplyShot(Side.Human, cell);
+            return game;
+        });
+
+        var state = await GetGameStateAsync(gameId);
+
+        Assert.NotNull(state.Statistics);
+        Assert.Equal(state.ShotHistory.Count, state.Statistics!.Human.ShotCount);
+        Assert.Equal(0, state.Statistics.Computer.ShotCount);
+        Assert.Equal(state.ShotHistory.Count, state.Statistics.Human.HitCount);
+        Assert.Equal(1m, state.Statistics.Human.HitRate);
+        Assert.True(state.Statistics.Duration >= TimeSpan.Zero);
     }
 
     [Fact]

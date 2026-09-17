@@ -254,3 +254,41 @@ Ce document consigne les échanges décisifs réalisés avec l'assistant IA au c
 - **Décision** : Acceptée. La sélection repose sur la difficulté persistée au niveau de la partie et reste compatible avec l'architecture `IOpponentStrategy`.
 - **Vérification** : `dotnet test --no-restore` -> 96 tests réussis sur 96, 0 échec.
 - **Preuve** : `BattleShip.Models/Domain/Game.cs`, `BattleShip.API/Services/GameService.cs`, `BattleShip.App/Pages/NewGame.razor`, `BattleShip.App/Services/GameHttpClient.cs`, `BattleShip.Tests/Integration/GameEndpointsTests.cs` et `BattleShip.Tests/Unit/GameTests.cs`.
+
+---
+
+## 16. Développement de la Story 2.3 : historique des coups joués
+
+- **Date** : 16 septembre 2026
+- **Outil / modèle** : GitHub Copilot
+- **Contexte** : La Story 2.3 devait conserver les coups humains et ordinateur dans un ordre chronologique, les exposer au client et les afficher dans `Play.razor`. L'état existant ne conservait que les coordonnées jouées séparément sur chaque grille et n'affichait que le dernier tour.
+- **Prompt** :
+  > `De la même manière, peux-tu développer la story 2.3: Historique des coups joués`
+- **Réponse résumée** :
+  1. Ajout d'un record domaine `Shot` contenant le camp, la coordonnée, le résultat et l'horodatage UTC.
+  2. Ajout de `Game.ShotHistory`, alimenté uniquement après la résolution réussie d'un tir; les tirs rejoués ou refusés ne créent donc aucune entrée.
+  3. Exposition de l'historique dans `GameStateDto` via `GameViewMapper`, sans modifier la séparation des grilles visibles.
+  4. Affichage de la liste chronologique dans `Play.razor`, avec le camp, la coordonnée et le résultat de chaque coup.
+  5. Ajout de tests unitaires sur l'ordre et les deux camps, ainsi que d'un test d'intégration sur le contrat HTTP.
+- **Décision** : Acceptée. L'historique appartient à l'agrégat `Game`, ce qui garantit une source unique pour les tirs humains et ordinateur et prépare les statistiques de fin de partie.
+- **Vérification** : Tests ciblés du domaine (14 réussis), tests HTTP/gRPC (25 réussis), compilation complète (`dotnet build BattleShip.slnx --no-restore`), puis suite complète (`dotnet test BattleShip.slnx --no-restore`) : 98 tests réussis sur 98, 0 échec.
+- **Preuve** : `BattleShip.Models/Domain/Shot.cs`, `BattleShip.Models/Domain/Game.cs`, `BattleShip.Models/Contracts/GameStateDto.cs`, `BattleShip.API/Mapping/GameViewMapper.cs`, `BattleShip.App/Pages/Play.razor`, `BattleShip.Tests/Unit/GameTests.cs` et `BattleShip.Tests/Integration/GameEndpointsTests.cs`.
+
+---
+
+## 17. Développement de la Story 2.4 : statistiques de fin de partie
+
+- **Date** : 16 septembre 2026
+- **Outil / modèle** : GitHub Copilot
+- **Contexte** : La Story 2.4 devait calculer, pour chaque camp, le nombre de tirs, le nombre de touches, le taux de réussite et la durée entre la création et la fin de la partie, puis afficher ces valeurs après la victoire ou la défaite.
+- **Prompt** :
+  > `de la même manière, peux-tu développer la story 2.4: Statistiques de fin de partie`
+- **Réponse résumée** :
+  1. Ajout des bornes temporelles `CreatedAt` et `FinishedAt` dans `Game`.
+  2. Ajout de `GameStatisticsCalculator`, calculateur pur prenant un historique connu et deux dates, avec `ShotCount`, `HitCount`, `HitRate` et `Duration` pour `Human` et `Computer`.
+  3. Exposition de `Statistics` dans `GameStateDto` via `GameViewMapper`; la valeur reste absente (`null`) tant que la partie est en cours.
+  4. Affichage d'un tableau de synthèse dans `Play.razor` après la fin de la partie.
+  5. Ajout de tests unitaires exacts sur les compteurs, taux et durée, ainsi que de tests d'intégration sur les états en cours et terminés.
+- **Décision** : Acceptée. Le calcul est séparé de l'agrégat et testable avec des dates/historiques déterministes; les statistiques finales ne sont publiées qu'une fois le vainqueur connu.
+- **Vérification** : Tests unitaires ciblés (16 réussis), tests HTTP ciblés (13 réussis), compilation complète (`dotnet build BattleShip.slnx --no-restore`) réussie, puis suite complète (`dotnet test BattleShip.slnx --no-restore`) : 101 tests réussis sur 101, 0 échec.
+- **Preuve** : `BattleShip.Models/Domain/GameStatistics.cs`, `BattleShip.Models/Domain/Game.cs`, `BattleShip.Models/Contracts/GameStateDto.cs`, `BattleShip.API/Mapping/GameViewMapper.cs`, `BattleShip.App/Pages/Play.razor`, `BattleShip.Tests/Unit/GameTests.cs` et `BattleShip.Tests/Integration/GameEndpointsTests.cs`.

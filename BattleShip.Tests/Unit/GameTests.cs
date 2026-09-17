@@ -40,6 +40,68 @@ public class GameTests
     }
 
     [Fact]
+    public void GameStatisticsCalculator_ComputesCountsRatesAndDurationForEachSide()
+    {
+        var startedAt = new DateTimeOffset(2026, 9, 16, 10, 0, 0, TimeSpan.Zero);
+        var finishedAt = startedAt.AddMinutes(3).AddSeconds(12);
+        var shots = new List<Shot>
+        {
+            new(Side.Human, new Coordinate(0, 0), ShotOutcome.Hit, startedAt.AddSeconds(1)),
+            new(Side.Human, new Coordinate(0, 1), ShotOutcome.Miss, startedAt.AddSeconds(2)),
+            new(Side.Computer, new Coordinate(1, 0), ShotOutcome.Sunk, startedAt.AddSeconds(3))
+        };
+
+        var statistics = GameStatisticsCalculator.Calculate(shots, startedAt, finishedAt);
+
+        Assert.Equal(2, statistics.Human.ShotCount);
+        Assert.Equal(1, statistics.Human.HitCount);
+        Assert.Equal(0.5m, statistics.Human.HitRate);
+        Assert.Equal(1, statistics.Computer.ShotCount);
+        Assert.Equal(1, statistics.Computer.HitCount);
+        Assert.Equal(1m, statistics.Computer.HitRate);
+        Assert.Equal(TimeSpan.FromMinutes(3).Add(TimeSpan.FromSeconds(12)), statistics.Duration);
+        Assert.Equal(statistics.Duration, statistics.Human.Duration);
+        Assert.Equal(statistics.Duration, statistics.Computer.Duration);
+    }
+
+    [Fact]
+    public void GetStatistics_ReturnsNullWhileGameIsInProgress()
+    {
+        var game = new Game(new Grid(), SingleShipGrid(new Coordinate(0, 0)));
+
+        game.ApplyShot(Side.Human, new Coordinate(1, 1));
+
+        Assert.Null(game.GetStatistics());
+    }
+
+    [Fact]
+    public void ApplyShot_AppendsHumanAndComputerShotsInChronologicalOrder()
+    {
+        var computerGrid = BuildGrid(new Ship("Torpilleur", 2, Orientation.Horizontal,
+            [new Coordinate(0, 0), new Coordinate(0, 1)]));
+        var game = new Game(new Grid(), computerGrid);
+
+        game.ApplyShot(Side.Human, new Coordinate(0, 0));
+        game.ApplyShot(Side.Computer, new Coordinate(1, 1));
+
+        var history = game.ShotHistory;
+        Assert.Collection(history,
+            shot =>
+            {
+                Assert.Equal(Side.Human, shot.Side);
+                Assert.Equal(new Coordinate(0, 0), shot.Coordinate);
+                Assert.Equal(ShotOutcome.Hit, shot.Outcome);
+            },
+            shot =>
+            {
+                Assert.Equal(Side.Computer, shot.Side);
+                Assert.Equal(new Coordinate(1, 1), shot.Coordinate);
+                Assert.Equal(ShotOutcome.Miss, shot.Outcome);
+            });
+        Assert.All(history, shot => Assert.NotEqual(default, shot.PlayedAt));
+    }
+
+    [Fact]
     public void ApplyShot_FinishesGameAndSetsWinner_WhenTargetFleetIsFullySunk()
     {
         var computerGrid = SingleShipGrid(new Coordinate(0, 0));
@@ -86,6 +148,7 @@ public class GameTests
         Assert.Equal(GameStatus.InProgress, game.Status);
         Assert.Null(game.Winner);
         Assert.Single(computerGrid.ShotsPlayed);
+        Assert.Single(game.ShotHistory);
     }
 
     [Fact]
