@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-15-2026 10:50
-last_updated: 09-17-2026 00:30
+last_updated: 09-17-2026 01:00
 project: BattleShip
 project_key: NOKEY
 tracking_system: file-system
@@ -54,7 +54,7 @@ development_status:
   epic-3: in-progress
   3-1-mise-en-place-du-processus-de-traçabilité-ia: review
   3-2-consolidation-des-livrables-ia-avant-remise: review
-  3-3-readme-de-remise: backlog
+  3-3-readme-de-remise: review
   epic-3-retrospective: optional
 action_items:
   - id: "epic-1-retro-item-1-extraire-un-résolveur-unique-gamestatus"
@@ -77,7 +77,7 @@ action_items:
       (README ou ApiBaseAddress sensible au schéma) pour éviter un blocage de contenu
       mixte"
     owner: "dev"
-    status: open
+    status: done
     ref: "_bmad-output/implementation-artifacts/epic-1-retro-2026-09-15.md"
   - id: "epic-1-retro-item-4-ajouter-un-filet-catch-exception-génériq"
     epic: 1

@@ -337,3 +337,18 @@ Pour ajouter une entrée : dupliquez le bloc « Gabarit » ci-dessous, insérez 
 - **Décision** : Acceptée. Aucune décision n'a été inventée : chaque ADR et chaque revue renvoie à une preuve déjà existante (AD du spine, commit, ou constat de rétrospective).
 - **Vérification** : Chaque ADR comparé au AD correspondant du spine (aucune décision non couverte, aucune inventée). Chaque revue de `REVUE-IA.md` reliée à un commit ou un test réel existant, vérifié via `git log` (`13e84d9`, `f4d4e4b`, `ebb2e3b`, `fc9e8dc`) et via les fichiers de test réels cités. `git status`/`git diff` relus avant commit pour confirmer qu'aucun contenu existant (gabarit `REVUE-IA.md`, 18 entrées de `PROMPTS.md`) n'a été perdu.
 - **Preuve** : `docs/adr/ADR-0001-...md` à `ADR-0011-...md`, `REVUE-IA.md` (5 revues ajoutées après le gabarit), cette entrée elle-même.
+
+---
+
+## 20. Story 3.3 — Relocalisation de PROMPTS.md et REVUE-IA.md vers docs/
+
+- **Date** : 17 septembre 2026
+- **Outil / modèle** : Claude Code / Sonnet 5
+- **Contexte** : Pendant la rédaction du `README.md` de remise (Story 3.3), l'utilisateur a demandé de déplacer `PROMPTS.md` et `REVUE-IA.md` de la racine du dépôt vers `docs/` — préférence explicite de l'équipe, différente de l'emplacement suggéré par les diapositives 56/58 du support de cours (« à la racine du dépôt »), mais aucune exigence technique du socle n'impose cet emplacement précis.
+- **Prompt** :
+  > `tu mettras PROMPTS.md et REVUE-IA.md dans docs/`
+- **Réponse résumée** :
+  `git mv PROMPTS.md docs/PROMPTS.md` et `git mv REVUE-IA.md docs/REVUE-IA.md`. Mise à jour des liens dans `README.md` (section Traçabilité IA et Structure du dépôt). Les mentions de ces deux fichiers dans `docs/adr/ADR-0003/0006/0008/0010` restent valides (mentions sans chemin, pas de lien relatif à corriger). Aucune modification des entrées historiques déjà écrites dans ces deux fichiers, ni des specs déjà `done` des Stories 3.1/3.2, ni des documents de planification figés (`SPEC.md`, `epics.md`, `ARCHITECTURE-SPINE.md`) qui mentionnent encore l'emplacement racine — ce sont des enregistrements historiques de ce qui était vrai au moment où ils ont été écrits, pas des pointeurs à maintenir à jour.
+- **Décision** : Acceptée. Changement cosmétique de rangement, sans impact sur le contenu ni les preuves déjà consignées.
+- **Vérification** : `grep` sur l'ensemble du dépôt pour lister toutes les références aux deux anciens chemins ; seuls `README.md` et les ADR contenaient des liens/mentions actifs à vérifier, les ADR n'en avaient en réalité pas besoin (mentions sans chemin).
+- **Preuve** : `git mv` (renommage détecté par Git), diff de `README.md`, cette entrée.
